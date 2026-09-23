@@ -8,19 +8,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, type BukaEvent } from "@/lib/buka";
+import { CATEGORIES, type BukaEvent, type CategoryValue } from "@/lib/buka";
 
-type BrowseSearch = { q?: string; category?: string; when?: "all" | "live" | "upcoming" };
+type BrowseSearch = {
+  q?: string | undefined;
+  category?: string | undefined;
+  when?: "all" | "live" | "upcoming" | undefined;
+};
 
 export const Route = createFileRoute("/browse")({
-  validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
-    q: typeof search.q === "string" ? search.q : undefined,
-    category: typeof search.category === "string" ? search.category : undefined,
-    when:
-      search.when === "live" || search.when === "upcoming" || search.when === "all"
-        ? search.when
-        : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): BrowseSearch => {
+    const when = search["when"];
+    return {
+      q: typeof search["q"] === "string" && search["q"] ? (search["q"] as string) : undefined,
+      category: typeof search["category"] === "string" ? (search["category"] as string) : undefined,
+      when: when === "live" || when === "upcoming" || when === "all" ? when : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Browse live & upcoming events — BukaLive" },
@@ -46,7 +50,7 @@ function Browse() {
   const category = search.category;
   const q = search.q ?? "";
 
-  const setSearch = (next: Partial<BrowseSearch>) =>
+  const setSearch = (next: BrowseSearch) =>
     navigate({ search: (prev) => ({ ...prev, ...next }) });
 
   const { data, isLoading } = useQuery({
@@ -58,7 +62,7 @@ function Browse() {
         .eq("is_published", true)
         .eq("is_flagged", false);
 
-      if (category) query = query.eq("category", category as BukaEvent["category"]);
+      if (category) query = query.eq("category", category as CategoryValue);
       if (when === "live") query = query.eq("status", "live");
       if (when === "upcoming") {
         query = query.neq("status", "ended").gte("scheduled_at", new Date().toISOString());
