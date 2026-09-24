@@ -12,9 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as HostRouteImport } from './routes/host'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
+import { Route as HostIndexRouteImport } from './routes/host.index'
+import { Route as HostApplyRouteImport } from './routes/host.apply'
 import { Route as WatchEventIdRouteImport } from './routes/watch.$eventId'
+import { Route as HostEventsEventIdRouteImport } from './routes/host.events.$eventId'
+import { Route as HostEventsNewRouteImport } from './routes/host.events.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -31,6 +36,11 @@ const BrowseRoute = BrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HostRoute = HostRouteImport.update({
+  id: '/host',
+  path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TicketsRoute = TicketsRouteImport.update({
   id: '/tickets',
   path: '/tickets',
@@ -41,19 +51,44 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
   path: '/events/$eventId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HostIndexRoute = HostIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostApplyRoute = HostApplyRouteImport.update({
+  id: '/apply',
+  path: '/apply',
+  getParentRoute: () => HostRoute,
+} as any)
 const WatchEventIdRoute = WatchEventIdRouteImport.update({
   id: '/watch/$eventId',
   path: '/watch/$eventId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const HostEventsEventIdRoute = HostEventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostEventsNewRoute = HostEventsNewRouteImport.update({
+  id: '/events/new',
+  path: '/events/new',
+  getParentRoute: () => HostRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/host': typeof HostRouteWithChildren
   '/tickets': typeof TicketsRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/host/apply': typeof HostApplyRoute
   '/watch/$eventId': typeof WatchEventIdRoute
+  '/host/': typeof HostIndexRoute
+  '/host/events/$eventId': typeof HostEventsEventIdRoute
+  '/host/events/new': typeof HostEventsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,16 +96,25 @@ export interface FileRoutesByTo {
   '/browse': typeof BrowseRoute
   '/tickets': typeof TicketsRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/host/apply': typeof HostApplyRoute
   '/watch/$eventId': typeof WatchEventIdRoute
+  '/host': typeof HostIndexRoute
+  '/host/events/$eventId': typeof HostEventsEventIdRoute
+  '/host/events/new': typeof HostEventsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/host': typeof HostRouteWithChildren
   '/tickets': typeof TicketsRoute
   '/events/$eventId': typeof EventsEventIdRoute
+  '/host/apply': typeof HostApplyRoute
   '/watch/$eventId': typeof WatchEventIdRoute
+  '/host/': typeof HostIndexRoute
+  '/host/events/$eventId': typeof HostEventsEventIdRoute
+  '/host/events/new': typeof HostEventsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,9 +122,14 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/browse'
+    | '/host'
     | '/tickets'
     | '/events/$eventId'
+    | '/host/apply'
     | '/watch/$eventId'
+    | '/host/'
+    | '/host/events/$eventId'
+    | '/host/events/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,21 +137,31 @@ export interface FileRouteTypes {
     | '/browse'
     | '/tickets'
     | '/events/$eventId'
+    | '/host/apply'
     | '/watch/$eventId'
+    | '/host'
+    | '/host/events/$eventId'
+    | '/host/events/new'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/browse'
+    | '/host'
     | '/tickets'
     | '/events/$eventId'
+    | '/host/apply'
     | '/watch/$eventId'
+    | '/host/'
+    | '/host/events/$eventId'
+    | '/host/events/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  HostRoute: typeof HostRouteWithChildren
   TicketsRoute: typeof TicketsRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   WatchEventIdRoute: typeof WatchEventIdRoute
@@ -131,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrowseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/host': {
+      id: '/host'
+      path: '/host'
+      fullPath: '/host'
+      preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tickets': {
       id: '/tickets'
       path: '/tickets'
@@ -145,6 +211,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/host/': {
+      id: '/host/'
+      path: '/'
+      fullPath: '/host/'
+      preLoaderRoute: typeof HostIndexRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/apply': {
+      id: '/host/apply'
+      path: '/apply'
+      fullPath: '/host/apply'
+      preLoaderRoute: typeof HostApplyRouteImport
+      parentRoute: typeof HostRoute
+    }
     '/watch/$eventId': {
       id: '/watch/$eventId'
       path: '/watch/$eventId'
@@ -152,13 +232,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchEventIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/host/events/$eventId': {
+      id: '/host/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/host/events/$eventId'
+      preLoaderRoute: typeof HostEventsEventIdRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/events/new': {
+      id: '/host/events/new'
+      path: '/events/new'
+      fullPath: '/host/events/new'
+      preLoaderRoute: typeof HostEventsNewRouteImport
+      parentRoute: typeof HostRoute
+    }
   }
 }
+
+interface HostRouteChildren {
+  HostApplyRoute: typeof HostApplyRoute
+  HostIndexRoute: typeof HostIndexRoute
+  HostEventsEventIdRoute: typeof HostEventsEventIdRoute
+  HostEventsNewRoute: typeof HostEventsNewRoute
+}
+
+const HostRouteChildren: HostRouteChildren = {
+  HostApplyRoute: HostApplyRoute,
+  HostIndexRoute: HostIndexRoute,
+  HostEventsEventIdRoute: HostEventsEventIdRoute,
+  HostEventsNewRoute: HostEventsNewRoute,
+}
+
+const HostRouteWithChildren = HostRoute._addFileChildren(HostRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  HostRoute: HostRouteWithChildren,
   TicketsRoute: TicketsRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   WatchEventIdRoute: WatchEventIdRoute,
