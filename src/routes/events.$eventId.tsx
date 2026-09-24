@@ -37,7 +37,7 @@ export const Route = createFileRoute("/events/$eventId")({
       },
     ],
   }),
-  component: EventDetail;
+  component: EventDetail,
 });
 
 function EventDetail() {
