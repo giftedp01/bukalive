@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
+import { Route as WatchEventIdRouteImport } from './routes/watch.$eventId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +31,81 @@ const BrowseRoute = BrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TicketsRoute = TicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchEventIdRoute = WatchEventIdRouteImport.update({
+  id: '/watch/$eventId',
+  path: '/watch/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/tickets': typeof TicketsRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/watch/$eventId': typeof WatchEventIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/tickets': typeof TicketsRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/watch/$eventId': typeof WatchEventIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/tickets': typeof TicketsRoute
+  '/events/$eventId': typeof EventsEventIdRoute
+  '/watch/$eventId': typeof WatchEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/browse'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/browse'
+    | '/tickets'
+    | '/events/$eventId'
+    | '/watch/$eventId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/browse'
-  id: '__root__' | '/' | '/auth' | '/browse'
+  to:
+    | '/'
+    | '/auth'
+    | '/browse'
+    | '/tickets'
+    | '/events/$eventId'
+    | '/watch/$eventId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/browse'
+    | '/tickets'
+    | '/events/$eventId'
+    | '/watch/$eventId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
+  TicketsRoute: typeof TicketsRoute
+  EventsEventIdRoute: typeof EventsEventIdRoute
+  WatchEventIdRoute: typeof WatchEventIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +131,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrowseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tickets': {
+      id: '/tickets'
+      path: '/tickets'
+      fullPath: '/tickets'
+      preLoaderRoute: typeof TicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watch/$eventId': {
+      id: '/watch/$eventId'
+      path: '/watch/$eventId'
+      fullPath: '/watch/$eventId'
+      preLoaderRoute: typeof WatchEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
+  TicketsRoute: TicketsRoute,
+  EventsEventIdRoute: EventsEventIdRoute,
+  WatchEventIdRoute: WatchEventIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
