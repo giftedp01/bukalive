@@ -4,6 +4,7 @@ import { CalendarClock, Clock, MapPin, Radio, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 import { AdSlot } from "@/components/AdSlot";
+import { SubExperienceList } from "@/components/SubExperienceList";
 import { Countdown } from "@/components/Countdown";
 import { CoverImage } from "@/components/CoverImage";
 import { Badge } from "@/components/ui/badge";
@@ -169,6 +170,13 @@ function EventDetail() {
               {event.description || "The host hasn't added a description yet."}
             </p>
           </section>
+
+          {event.subExperiences && event.subExperiences.length > 0 && (
+            <SubExperienceList
+              subExperiences={event.subExperiences}
+              eventId={event.id}
+            />
+          )}
 
           <section>
             <h2 className="font-display text-xl">Your host</h2>

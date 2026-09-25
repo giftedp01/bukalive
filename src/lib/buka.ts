@@ -17,6 +17,34 @@ export function categoryLabel(value: string) {
   return CATEGORIES.find((c) => c.value === value)?.label ?? "Other";
 }
 
+/** A single action available on a sub-experience. */
+export type SubExperienceAction = {
+  label: string;
+  url: string;
+};
+
+/**
+ * A bookable/watchable sub-experience nested under a top-level BukaEvent.
+ * e.g. "Sunset Game Drive" under "Kruger Safari".
+ */
+export type SubExperience = {
+  id: string;
+  name: string;
+  description?: string;
+  /** ISO date-time string — shown on Upcoming badge */
+  scheduledAt?: string;
+  status: "live" | "upcoming" | "ended";
+  actions?: {
+    /** Present when this sub-experience has an active LiveKit stream. */
+    watchLive?: true;
+    book?: SubExperienceAction;
+    visit?: SubExperienceAction;
+    stay?: SubExperienceAction;
+    eat?: SubExperienceAction;
+    explore?: SubExperienceAction;
+  };
+};
+
 export type BukaEvent = {
   id: string;
   host_id: string;
@@ -42,6 +70,11 @@ export type BukaEvent = {
   book_url?: string | null;
   visit_url?: string | null;
   stay_url?: string | null;
+  /**
+   * Optional nested sub-experiences (e.g. specific game drives under a safari).
+   * When absent or empty the event detail page renders exactly as before.
+   */
+  subExperiences?: SubExperience[];
 };
 
 export function formatPrice(cents: number, currency = "USD") {
