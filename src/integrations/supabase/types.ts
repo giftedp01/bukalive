@@ -48,11 +48,14 @@ export type Database = {
       }
       events: {
         Row: {
+          book_url: string | null
           category: Database["public"]["Enums"]["event_category"]
+          category_id: string | null
           cover_image_url: string | null
           created_at: string
           currency: string
           description: string
+          destination_id: string | null
           duration_minutes: number
           host_id: string
           id: string
@@ -60,19 +63,25 @@ export type Database = {
           is_published: boolean
           location: string
           price_cents: number
+          province_id: string | null
           scheduled_at: string
           status: Database["public"]["Enums"]["event_status"]
+          stay_url: string | null
           sub_experiences: Json
           title: string
           updated_at: string
           view_count: number
+          visit_url: string | null
         }
         Insert: {
+          book_url?: string | null
           category?: Database["public"]["Enums"]["event_category"]
+          category_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
           description?: string
+          destination_id?: string | null
           duration_minutes?: number
           host_id: string
           id?: string
@@ -80,19 +89,25 @@ export type Database = {
           is_published?: boolean
           location?: string
           price_cents?: number
+          province_id?: string | null
           scheduled_at: string
           status?: Database["public"]["Enums"]["event_status"]
+          stay_url?: string | null
           sub_experiences?: Json
           title: string
           updated_at?: string
           view_count?: number
+          visit_url?: string | null
         }
         Update: {
+          book_url?: string | null
           category?: Database["public"]["Enums"]["event_category"]
+          category_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
           description?: string
+          destination_id?: string | null
           duration_minutes?: number
           host_id?: string
           id?: string
@@ -100,12 +115,15 @@ export type Database = {
           is_published?: boolean
           location?: string
           price_cents?: number
+          province_id?: string | null
           scheduled_at?: string
           status?: Database["public"]["Enums"]["event_status"]
+          stay_url?: string | null
           sub_experiences?: Json
           title?: string
           updated_at?: string
           view_count?: number
+          visit_url?: string | null
         }
         Relationships: []
       }

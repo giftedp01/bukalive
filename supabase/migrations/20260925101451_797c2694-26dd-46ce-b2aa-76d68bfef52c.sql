@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS category_id text, ADD COLUMN IF NOT EXISTS province_id text, ADD COLUMN IF NOT EXISTS destination_id text, ADD COLUMN IF NOT EXISTS book_url text, ADD COLUMN IF NOT EXISTS visit_url text, ADD COLUMN IF NOT EXISTS stay_url text;
