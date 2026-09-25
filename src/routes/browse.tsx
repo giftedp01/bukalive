@@ -1,19 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { AdSlot } from "@/components/AdSlot";
 import { EventCard } from "@/components/EventCard";
+import { ProvinceSelector } from "@/components/browse/ProvinceSelector";
+import { DestinationSelector } from "@/components/browse/DestinationSelector";
+import { CategorySelector } from "@/components/browse/CategorySelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, type BukaEvent, type CategoryValue } from "@/lib/buka";
+import { type BukaEvent } from "@/lib/buka";
 
 type BrowseSearch = {
   q?: string | undefined;
-  category?: string | undefined;
   when?: "all" | "live" | "upcoming" | undefined;
+  province?: string | undefined;
+  destination?: string | undefined;
+  tourism_category?: string | undefined;
 };
 
 export const Route = createFileRoute("/browse")({
@@ -21,8 +26,14 @@ export const Route = createFileRoute("/browse")({
     const when = search["when"];
     return {
       q: typeof search["q"] === "string" && search["q"] ? (search["q"] as string) : undefined,
-      category: typeof search["category"] === "string" ? (search["category"] as string) : undefined,
       when: when === "live" || when === "upcoming" || when === "all" ? when : undefined,
+      province: typeof search["province"] === "string" ? (search["province"] as string) : undefined,
+      destination:
+        typeof search["destination"] === "string" ? (search["destination"] as string) : undefined,
+      tourism_category:
+        typeof search["tourism_category"] === "string"
+          ? (search["tourism_category"] as string)
+          : undefined,
     };
   },
   head: () => ({
@@ -36,7 +47,7 @@ export const Route = createFileRoute("/browse")({
       { property: "og:title", content: "Browse live & upcoming events — BukaLive" },
       {
         property: "og:description",
-        content: "Find a live moment to watch, filtered by category, keyword and destination.",
+        content: "Find a live moment to watch, filtered by province, destination and category.",
       },
     ],
   }),
@@ -47,14 +58,21 @@ function Browse() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/browse" });
   const when = search.when ?? "all";
-  const category = search.category;
   const q = search.q ?? "";
+  const province = search.province;
+  const destination = search.destination;
+  const tourism_category = search.tourism_category;
 
-  const setSearch = (next: BrowseSearch) =>
+  const setSearch = (next: Partial<BrowseSearch>) =>
     navigate({ search: (prev) => ({ ...prev, ...next }) });
 
+  const hasFilters = !!(province || destination || tourism_category);
+
+  const clearFilters = () =>
+    setSearch({ province: undefined, destination: undefined, tourism_category: undefined });
+
   const { data, isLoading } = useQuery({
-    queryKey: ["events", "browse", q, category, when],
+    queryKey: ["events", "browse", q, when, province, destination, tourism_category],
     queryFn: async () => {
       let query = supabase
         .from("events")
@@ -62,12 +80,14 @@ function Browse() {
         .eq("is_published", true)
         .eq("is_flagged", false);
 
-      if (category) query = query.eq("category", category as CategoryValue);
       if (when === "live") query = query.eq("status", "live");
       if (when === "upcoming") {
         query = query.neq("status", "ended").gte("scheduled_at", new Date().toISOString());
       }
       if (q.trim()) query = query.or(`title.ilike.%${q}%,location.ilike.%${q}%`);
+      if (tourism_category) query = query.eq("category_id", tourism_category);
+      if (province) query = query.eq("province_id", province);
+      if (destination) query = query.eq("destination_id", destination);
 
       const { data, error } = await query.order("scheduled_at", { ascending: true }).limit(60);
       if (error) throw error;
@@ -81,10 +101,11 @@ function Browse() {
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
       <h1 className="font-display text-3xl">Find your next live moment</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Search by keyword or destination, then filter by category.
+        Filter by province, destination and category — or search by keyword.
       </p>
 
       <div className="mt-6 space-y-4">
+        {/* Keyword search */}
         <div className="relative max-w-xl">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -93,12 +114,13 @@ function Browse() {
           <Input
             value={q}
             onChange={(e) => setSearch({ q: e.target.value || undefined })}
-            placeholder="Try “Serengeti”, “jazz”, “marathon”…"
+            placeholder='Try “Serengeti”, “jazz”, “marathon”…'
             className="h-12 rounded-full pl-9"
             aria-label="Search events"
           />
         </div>
 
+        {/* When filter */}
         <div className="flex flex-wrap gap-2">
           {(["all", "live", "upcoming"] as const).map((option) => (
             <Button
@@ -112,25 +134,32 @@ function Browse() {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Location & category selectors */}
+        <ProvinceSelector
+          value={province}
+          onChange={(id) => setSearch({ province: id, destination: undefined })}
+        />
+        <DestinationSelector
+          provinceId={province}
+          value={destination}
+          onChange={(id) => setSearch({ destination: id })}
+        />
+        <CategorySelector
+          value={tourism_category}
+          onChange={(id) => setSearch({ tourism_category: id })}
+        />
+
+        {hasFilters && (
           <Button
             size="sm"
-            variant={!category ? "default" : "outline"}
-            onClick={() => setSearch({ category: undefined })}
+            variant="ghost"
+            className="gap-1.5 text-muted-foreground"
+            onClick={clearFilters}
           >
-            All categories
+            <X className="h-3.5 w-3.5" aria-hidden />
+            Clear all filters
           </Button>
-          {CATEGORIES.map((item) => (
-            <Button
-              key={item.value}
-              size="sm"
-              variant={category === item.value ? "default" : "outline"}
-              onClick={() => setSearch({ category: item.value })}
-            >
-              {item.label}
-            </Button>
-          ))}
-        </div>
+        )}
       </div>
 
       <div className="my-8">
@@ -147,7 +176,7 @@ function Browse() {
         <div className="rounded-2xl bg-muted px-6 py-16 text-center">
           <p className="font-display text-xl">No events match that yet</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Try a different category or clear your search.
+            Try a different filter or clear your search.
           </p>
         </div>
       ) : (
