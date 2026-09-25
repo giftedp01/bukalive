@@ -34,6 +34,14 @@ export type BukaEvent = {
   is_flagged: boolean;
   view_count: number;
   created_at: string;
+  // SA tourism taxonomy (all optional — not every experience needs a full location)
+  category_id?: string | null;
+  province_id?: string | null;
+  destination_id?: string | null;
+  // Outbound action links (optional — just URLs, no booking system)
+  book_url?: string | null;
+  visit_url?: string | null;
+  stay_url?: string | null;
 };
 
 export function formatPrice(cents: number, currency = "USD") {
