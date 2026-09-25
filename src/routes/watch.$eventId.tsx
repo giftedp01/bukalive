@@ -15,6 +15,10 @@ import { useAuth } from "@/lib/auth";
 import { formatWhen, isWatchable, type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/watch/$eventId")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const subExperienceId = search["subExperienceId"];
+    return typeof subExperienceId === "string" ? { subExperienceId } : {};
+  },
   head: () => ({
     meta: [
       { title: "Watch live — BukaLive" },
@@ -148,6 +152,7 @@ function ChatPanel({ eventId }: { eventId: string }) {
 
 function WatchPage() {
   const { eventId } = Route.useParams();
+  const { subExperienceId } = Route.useSearch();
   const { user, loading } = useAuth();
 
   const { data: event, isLoading } = useQuery({
@@ -254,6 +259,7 @@ function WatchPage() {
           <div
             id="livekit-player-container"
             data-video-player="livekit"
+            data-sub-experience-id={subExperienceId}
             className="grid aspect-video w-full place-items-center rounded-3xl bg-sunset text-center text-primary-foreground"
           >
             <div className="px-6">

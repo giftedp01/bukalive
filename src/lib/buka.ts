@@ -30,18 +30,18 @@ export type SubExperienceAction = {
 export type SubExperience = {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   /** ISO date-time string — shown on Upcoming badge */
   scheduledAt?: string;
   status: "live" | "upcoming" | "ended";
   actions?: {
     /** Present when this sub-experience has an active LiveKit stream. */
-    watchLive?: true;
-    book?: SubExperienceAction;
-    visit?: SubExperienceAction;
-    stay?: SubExperienceAction;
-    eat?: SubExperienceAction;
-    explore?: SubExperienceAction;
+    watchLive?: true | null;
+    book?: SubExperienceAction | null;
+    visit?: SubExperienceAction | null;
+    stay?: SubExperienceAction | null;
+    eat?: SubExperienceAction | null;
+    explore?: SubExperienceAction | null;
   };
 };
 
