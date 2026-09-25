@@ -62,6 +62,7 @@ export type Database = {
           price_cents: number
           scheduled_at: string
           status: Database["public"]["Enums"]["event_status"]
+          sub_experiences: Json
           title: string
           updated_at: string
           view_count: number
@@ -81,6 +82,7 @@ export type Database = {
           price_cents?: number
           scheduled_at: string
           status?: Database["public"]["Enums"]["event_status"]
+          sub_experiences?: Json
           title: string
           updated_at?: string
           view_count?: number
@@ -100,6 +102,7 @@ export type Database = {
           price_cents?: number
           scheduled_at?: string
           status?: Database["public"]["Enums"]["event_status"]
+          sub_experiences?: Json
           title?: string
           updated_at?: string
           view_count?: number
