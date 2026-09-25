@@ -52,7 +52,12 @@ function EventDetail() {
     queryFn: async () => {
       const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
       if (error) throw error;
-      return (data as BukaEvent | null) ?? null;
+      if (!data) return null;
+      const raw = (data as { sub_experiences?: unknown }).sub_experiences;
+      return {
+        ...(data as unknown as BukaEvent),
+        subExperiences: Array.isArray(raw) ? (raw as BukaEvent["subExperiences"]) : [],
+      } as BukaEvent;
     },
   });
 

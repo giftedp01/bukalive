@@ -150,7 +150,7 @@ function Home() {
             <Link
               key={category.value}
               to="/browse"
-              search={{ category: category.value }}
+              search={{ q: category.label }}
               className="rounded-full bg-sand px-4 py-2 text-sm font-medium text-sand-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               {category.label}

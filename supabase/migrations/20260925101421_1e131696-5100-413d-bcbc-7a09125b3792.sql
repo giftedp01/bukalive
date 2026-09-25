@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS sub_experiences jsonb NOT NULL DEFAULT '[]'::jsonb;
