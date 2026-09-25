@@ -7,8 +7,9 @@ import { AdSlot } from "@/components/AdSlot";
 import { EventCard } from "@/components/EventCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TOURISM_CATEGORIES } from "@/data/categories";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, type BukaEvent } from "@/lib/buka";
+import { type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -144,16 +145,16 @@ function Home() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 pt-10">
-        <h2 className="mb-4 font-display text-2xl">Browse by category</h2>
+        <h2 className="mb-4 font-display text-2xl">Explore categories</h2>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((category) => (
+          {TOURISM_CATEGORIES.map((category) => (
             <Link
-              key={category.value}
+              key={category.id}
               to="/browse"
-              search={{ q: category.label }}
+              search={{ tourism_category: category.id }}
               className="rounded-full bg-sand px-4 py-2 text-sm font-medium text-sand-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
-              {category.label}
+              <span aria-hidden>{category.icon}</span> {category.label}
             </Link>
           ))}
         </div>
