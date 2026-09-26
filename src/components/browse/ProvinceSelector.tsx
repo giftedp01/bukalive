@@ -1,5 +1,6 @@
 import { PROVINCES } from "@/data/provinces";
 import { Button } from "@/components/ui/button";
+import { ScrollablePillRow } from "@/components/browse/ScrollablePillRow";
 
 type Props = {
   value: string | undefined;
@@ -12,12 +13,12 @@ export function ProvinceSelector({ value, onChange }: Props) {
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         Province
       </p>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <ScrollablePillRow ariaLabel="Provinces">
         <Button
           type="button"
           size="sm"
           variant={!value ? "default" : "outline"}
-          className="shrink-0"
+          className="shrink-0 snap-start"
           onClick={() => onChange(undefined)}
         >
           All provinces
@@ -28,13 +29,13 @@ export function ProvinceSelector({ value, onChange }: Props) {
             type="button"
             size="sm"
             variant={value === p.id ? "default" : "outline"}
-            className="shrink-0"
+            className="shrink-0 snap-start"
             onClick={() => onChange(value === p.id ? undefined : p.id)}
           >
             {p.name}
           </Button>
         ))}
-      </div>
+      </ScrollablePillRow>
     </div>
   );
 }
