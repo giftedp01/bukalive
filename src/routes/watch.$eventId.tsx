@@ -1,7 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { Lock, Radio, Send } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { Lock, Send } from "lucide-react";
+
+const LivePlayer = lazy(() => import("@/components/LivePlayer"));
 import { toast } from "sonner";
 
 import { AdSlot } from "@/components/AdSlot";
@@ -252,24 +254,11 @@ function WatchPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          {/* ===== LIVEKIT VIDEO PLAYER CONTAINER =====
-              Mount the LiveKit room / video track renderer inside this element.
-              Everything around it (access gating, chat, layout) is already wired.
-              ========================================== */}
-          <div
-            id="livekit-player-container"
-            data-video-player="livekit"
-            data-sub-experience-id={subExperienceId}
-            className="grid aspect-video w-full place-items-center rounded-3xl bg-sunset text-center text-primary-foreground"
-          >
-            <div className="px-6">
-              <Radio className="mx-auto h-10 w-10 opacity-80" aria-hidden />
-              <p className="mt-3 font-display text-xl">Video player slot</p>
-              <p className="mt-1 text-sm text-primary-foreground/85">
-                The LiveKit stream embed mounts here.
-              </p>
-            </div>
-          </div>
+          <ClientOnly fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
+            <Suspense fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
+              <LivePlayer eventId={event.id} subExperienceId={subExperienceId} />
+            </Suspense>
+          </ClientOnly>
 
           <p className="whitespace-pre-line text-sm text-muted-foreground">{event.description}</p>
           <AdSlot placement="watch-sidebar" />
