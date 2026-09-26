@@ -6,19 +6,28 @@ import { Button } from "@/components/ui/button";
 type Props = {
   ariaLabel: string;
   children: ReactNode;
-  jumpToEdges?: boolean;
+  stepByPill?: boolean;
 };
 
-export function ScrollablePillRow({ ariaLabel, children, jumpToEdges = false }: Props) {
+export function ScrollablePillRow({ ariaLabel, children, stepByPill = false }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
     const container = scrollRef.current;
     if (!container) return;
 
-    if (jumpToEdges) {
+    if (stepByPill) {
+      const viewport = container.getBoundingClientRect();
+      const pills = Array.from(container.children) as HTMLElement[];
+      const targetPill =
+        direction === "right"
+          ? pills.find((pill) => pill.getBoundingClientRect().left > viewport.left + 1)
+          : pills.filter((pill) => pill.getBoundingClientRect().left < viewport.left - 1).at(-1);
+
+      if (!targetPill) return;
+
       container.scrollTo({
-        left: direction === "left" ? 0 : container.scrollWidth,
+        left: container.scrollLeft + targetPill.getBoundingClientRect().left - viewport.left,
         behavior: "smooth",
       });
       return;

@@ -13,7 +13,7 @@ export function ProvinceSelector({ value, onChange }: Props) {
       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         Province
       </p>
-      <ScrollablePillRow ariaLabel="Provinces" jumpToEdges>
+      <ScrollablePillRow ariaLabel="Provinces" stepByPill>
         <Button
           type="button"
           size="sm"
