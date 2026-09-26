@@ -234,7 +234,9 @@ function AdminPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium">{event.title}</p>
-                    <Badge variant="secondary">{categoryLabel(event.category)}</Badge>
+                    <Badge variant="secondary">
+                      {categoryLabel(event.category_id ?? event.category)}
+                    </Badge>
                     {event.is_flagged && <Badge variant="destructive">Flagged</Badge>}
                     {!event.is_published && <Badge variant="outline">Unpublished</Badge>}
                   </div>

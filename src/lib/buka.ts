@@ -1,3 +1,5 @@
+import { TOURISM_CATEGORIES } from "@/data/categories";
+
 export const CATEGORIES = [
   { value: "safari", label: "Safari" },
   { value: "sports", label: "Sports" },
@@ -14,7 +16,11 @@ export const CATEGORIES = [
 export type CategoryValue = (typeof CATEGORIES)[number]["value"];
 
 export function categoryLabel(value: string) {
-  return CATEGORIES.find((c) => c.value === value)?.label ?? "Other";
+  return (
+    TOURISM_CATEGORIES.find((category) => category.id === value)?.label ??
+    CATEGORIES.find((category) => category.value === value)?.label ??
+    "Other"
+  );
 }
 
 /** A single action available on a sub-experience. */
@@ -56,6 +62,7 @@ export type BukaEvent = {
   duration_minutes: number;
   price_cents: number;
   currency: string;
+  event_type: "ticketed" | "free_ad_slot";
   status: "draft" | "upcoming" | "live" | "ended";
   cover_image_url: string | null;
   is_published: boolean;
@@ -77,9 +84,9 @@ export type BukaEvent = {
   subExperiences?: SubExperience[];
 };
 
-export function formatPrice(cents: number, currency = "USD") {
+export function formatPrice(cents: number, currency = "ZAR") {
   if (!cents) return "Free";
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat(currency === "ZAR" ? "en-ZA" : "en-US", {
     style: "currency",
     currency,
     maximumFractionDigits: 2,

@@ -24,7 +24,7 @@ export function EventCard({ event }: { event: BukaEvent }) {
               <span className="live-dot" aria-hidden /> LIVE
             </Badge>
           ) : (
-            <Badge variant="secondary">{categoryLabel(event.category)}</Badge>
+            <Badge variant="secondary">{categoryLabel(event.category_id ?? event.category)}</Badge>
           )}
         </div>
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2 text-primary-foreground">

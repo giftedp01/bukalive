@@ -14,6 +14,7 @@ export function ProvinceSelector({ value, onChange }: Props) {
       </p>
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <Button
+          type="button"
           size="sm"
           variant={!value ? "default" : "outline"}
           className="shrink-0"
@@ -24,6 +25,7 @@ export function ProvinceSelector({ value, onChange }: Props) {
         {PROVINCES.map((p) => (
           <Button
             key={p.id}
+            type="button"
             size="sm"
             variant={value === p.id ? "default" : "outline"}
             className="shrink-0"

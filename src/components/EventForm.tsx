@@ -8,16 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CoverImage } from "@/components/CoverImage";
+import { CategorySelector } from "@/components/browse/CategorySelector";
+import { DestinationSelector } from "@/components/browse/DestinationSelector";
+import { ProvinceSelector } from "@/components/browse/ProvinceSelector";
+import { PROVINCES } from "@/data/provinces";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES, type BukaEvent, type CategoryValue } from "@/lib/buka";
+import { type BukaEvent } from "@/lib/buka";
 import { useAuth } from "@/lib/auth";
 
 function toLocalInput(iso: string) {
@@ -31,17 +29,27 @@ export function EventForm({ event }: { event?: BukaEvent }) {
   const navigate = useNavigate();
   const [title, setTitle] = useState(event?.title ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
-  const [category, setCategory] = useState<CategoryValue>((event?.category as CategoryValue) ?? "safari");
-  const [location, setLocation] = useState(event?.location ?? "");
+  const [categoryId, setCategoryId] = useState(event?.category_id ?? undefined);
+  const [provinceId, setProvinceId] = useState(event?.province_id ?? undefined);
+  const [destinationId, setDestinationId] = useState(event?.destination_id ?? undefined);
   const [scheduledAt, setScheduledAt] = useState(
-    event ? toLocalInput(event.scheduled_at) : toLocalInput(new Date(Date.now() + 86_400_000).toISOString()),
+    event
+      ? toLocalInput(event.scheduled_at)
+      : toLocalInput(new Date(Date.now() + 86_400_000).toISOString()),
   );
   const [duration, setDuration] = useState(String(event?.duration_minutes ?? 90));
   const [price, setPrice] = useState(((event?.price_cents ?? 0) / 100).toFixed(2));
+  const [eventType, setEventType] = useState<BukaEvent["event_type"]>(
+    event?.event_type ?? "ticketed",
+  );
   const [coverPath, setCoverPath] = useState<string | null>(event?.cover_image_url ?? null);
   const [published, setPublished] = useState(event?.is_published ?? false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const selectedProvince = PROVINCES.find((province) => province.id === provinceId);
+  const selectedDestination = selectedProvince?.destinations.find(
+    (destination) => destination.id === destinationId,
+  );
 
   const uploadCover = async (file: File) => {
     if (!user) return;
@@ -66,17 +74,25 @@ export function EventForm({ event }: { event?: BukaEvent }) {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!categoryId || !provinceId || !selectedProvince || !destinationId || !selectedDestination) {
+      toast.error("Choose a province, destination, and category");
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
         host_id: user.id,
         title,
         description,
-        category,
-        location,
+        category_id: categoryId,
+        province_id: provinceId,
+        destination_id: destinationId,
+        location: `${selectedDestination.name}, ${selectedProvince.name}`,
         scheduled_at: new Date(scheduledAt).toISOString(),
         duration_minutes: Number(duration) || 60,
-        price_cents: Math.round(Number(price) * 100) || 0,
+        price_cents: eventType === "ticketed" ? Math.round(Number(price) * 100) || 0 : 0,
+        currency: "ZAR",
+        event_type: eventType,
         cover_image_url: coverPath,
         is_published: published,
         status: (event?.status === "live" || event?.status === "ended"
@@ -127,31 +143,23 @@ export function EventForm({ event }: { event?: BukaEvent }) {
         />
       </div>
 
+      <div className="space-y-4">
+        <ProvinceSelector
+          value={provinceId}
+          onChange={(id) => {
+            setProvinceId(id);
+            setDestinationId(undefined);
+          }}
+        />
+        <DestinationSelector
+          provinceId={provinceId}
+          value={destinationId}
+          onChange={setDestinationId}
+        />
+        <CategorySelector value={categoryId} onChange={setCategoryId} />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
-          <Select value={category} onValueChange={(value) => setCategory(value as CategoryValue)}>
-            <SelectTrigger id="category">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CATEGORIES.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="location">Location / destination</Label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Maasai Mara, Kenya"
-          />
-        </div>
         <div className="space-y-2">
           <Label htmlFor="scheduledAt">Starts at</Label>
           <Input
@@ -172,18 +180,65 @@ export function EventForm({ event }: { event?: BukaEvent }) {
             onChange={(e) => setDuration(e.target.value)}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="price">Price to view (USD)</Label>
-          <Input
-            id="price"
-            type="number"
-            min="0"
-            step="0.01"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">Set 0 to make the broadcast free.</p>
+
+        <div className="space-y-2 sm:col-span-2">
+          <Label>Event type</Label>
+          <RadioGroup
+            value={eventType}
+            onValueChange={(value) => setEventType(value as BukaEvent["event_type"])}
+            className="grid gap-3 sm:grid-cols-2"
+          >
+            <label
+              htmlFor="event-type-ticketed"
+              className="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+            >
+              <RadioGroupItem id="event-type-ticketed" value="ticketed" className="mt-0.5" />
+              <span className="text-sm">Ticketed (viewers pay per ticket)</span>
+            </label>
+            <label
+              htmlFor="event-type-free-ad-slot"
+              className="flex cursor-pointer items-start gap-3 rounded-lg border p-3"
+            >
+              <RadioGroupItem
+                id="event-type-free-ad-slot"
+                value="free_ad_slot"
+                className="mt-0.5"
+              />
+              <span className="text-sm">Free (I pay for visibility)</span>
+            </label>
+          </RadioGroup>
         </div>
+
+        {eventType === "ticketed" ? (
+          <div className="space-y-2">
+            <Label htmlFor="price">Price to view (ZAR)</Label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                R
+              </span>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                className="pl-7"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label>Visibility slot</Label>
+            <div className="space-y-3 rounded-lg border p-3">
+              <p className="text-sm">R300 for a 30-minute slot, up to 25-30 viewers</p>
+              <Button type="button" variant="outline" disabled>
+                Pay for this slot
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="cover">Cover image</Label>
           <div className="flex items-center gap-3">

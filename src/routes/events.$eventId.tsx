@@ -148,7 +148,9 @@ function EventDetail() {
                 <span className="live-dot" aria-hidden /> LIVE NOW
               </Badge>
             ) : (
-              <Badge variant="secondary">{categoryLabel(event.category)}</Badge>
+              <Badge variant="secondary">
+                {categoryLabel(event.category_id ?? event.category)}
+              </Badge>
             )}
             {phase === "ended" && <Badge variant="secondary">Ended</Badge>}
           </div>

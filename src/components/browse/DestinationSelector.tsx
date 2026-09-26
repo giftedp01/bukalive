@@ -18,6 +18,7 @@ export function DestinationSelector({ provinceId, value, onChange }: Props) {
       </p>
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         <Button
+          type="button"
           size="sm"
           variant={!value ? "default" : "outline"}
           className="shrink-0"
@@ -28,6 +29,7 @@ export function DestinationSelector({ provinceId, value, onChange }: Props) {
         {province.destinations.map((d) => (
           <Button
             key={d.id}
+            type="button"
             size="sm"
             variant={value === d.id ? "default" : "outline"}
             className="shrink-0"
