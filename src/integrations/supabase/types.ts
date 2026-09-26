@@ -57,6 +57,7 @@ export type Database = {
           description: string
           destination_id: string | null
           duration_minutes: number
+          event_type: string
           host_id: string
           id: string
           is_flagged: boolean
@@ -83,6 +84,7 @@ export type Database = {
           description?: string
           destination_id?: string | null
           duration_minutes?: number
+          event_type?: string
           host_id: string
           id?: string
           is_flagged?: boolean
@@ -109,6 +111,7 @@ export type Database = {
           description?: string
           destination_id?: string | null
           duration_minutes?: number
+          event_type?: string
           host_id?: string
           id?: string
           is_flagged?: boolean
