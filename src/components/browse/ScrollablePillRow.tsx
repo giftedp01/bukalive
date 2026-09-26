@@ -17,17 +17,12 @@ export function ScrollablePillRow({ ariaLabel, children, stepByPill = false }: P
     if (!container) return;
 
     if (stepByPill) {
-      const viewport = container.getBoundingClientRect();
-      const pills = Array.from(container.children) as HTMLElement[];
-      const targetPill =
-        direction === "right"
-          ? pills.find((pill) => pill.getBoundingClientRect().left > viewport.left + 1)
-          : pills.filter((pill) => pill.getBoundingClientRect().left < viewport.left - 1).at(-1);
+      const firstPill = container.firstElementChild as HTMLElement | null;
+      const pillWidth = firstPill?.getBoundingClientRect().width ?? container.clientWidth * 0.8;
+      const gap = Number.parseFloat(window.getComputedStyle(container).columnGap) || 0;
 
-      if (!targetPill) return;
-
-      container.scrollTo({
-        left: container.scrollLeft + targetPill.getBoundingClientRect().left - viewport.left,
+      container.scrollBy({
+        left: (direction === "left" ? -1 : 1) * (pillWidth + gap),
         behavior: "smooth",
       });
       return;
