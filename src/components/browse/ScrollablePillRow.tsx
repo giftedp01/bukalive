@@ -6,14 +6,23 @@ import { Button } from "@/components/ui/button";
 type Props = {
   ariaLabel: string;
   children: ReactNode;
+  jumpToEdges?: boolean;
 };
 
-export function ScrollablePillRow({ ariaLabel, children }: Props) {
+export function ScrollablePillRow({ ariaLabel, children, jumpToEdges = false }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
     const container = scrollRef.current;
     if (!container) return;
+
+    if (jumpToEdges) {
+      container.scrollTo({
+        left: direction === "left" ? 0 : container.scrollWidth,
+        behavior: "smooth",
+      });
+      return;
+    }
 
     container.scrollBy({
       left: (direction === "left" ? -1 : 1) * container.clientWidth * 0.8,
