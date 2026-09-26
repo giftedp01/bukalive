@@ -33,7 +33,7 @@ function Stage() {
   return <VideoTrack trackRef={track} className="h-full w-full object-contain" />;
 }
 
-function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperienceId?: string }) {
+function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperienceId?: string | undefined }) {
   const create = useServerFn(createStreamIngress);
   const [info, setInfo] = useState<{ url: string; streamKey: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,7 +43,7 @@ function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperience
       <p className="font-medium">Stream from OBS or other software</p>
       {info ? (
         <div className="mt-3 space-y-2">
-          {[["Server", info.url], ["Stream key", info.streamKey]].map(([label, v]) => (
+          {([["Server", info.url], ["Stream key", info.streamKey]] as const).map(([label, v]) => (
             <div key={label} className="flex items-center gap-2">
               <span className="w-24 text-muted-foreground">{label}</span>
               <code className="flex-1 truncate rounded bg-muted px-2 py-1">{v}</code>
@@ -76,7 +76,7 @@ function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperience
   );
 }
 
-export default function LivePlayer({ eventId, subExperienceId }: { eventId: string; subExperienceId?: string }) {
+export default function LivePlayer({ eventId, subExperienceId }: { eventId: string; subExperienceId?: string | undefined }) {
   const getToken = useServerFn(getLiveKitToken);
   const { data, error } = useQuery({
     queryKey: ["livekit-token", eventId, subExperienceId],

@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const input = z.object({ eventId: z.string().uuid(), subExperienceId: z.string().max(100).optional() });
+const input = z.object({ eventId: z.string().uuid(), subExperienceId: z.string().max(100).optional().nullable() });
 
-function roomName(eventId: string, sub?: string) {
+function roomName(eventId: string, sub?: string | null) {
   return sub ? `event-${eventId}-${sub}` : `event-${eventId}`;
 }
 
