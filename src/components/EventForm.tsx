@@ -22,6 +22,15 @@ function toLocalInput(iso: string) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function errorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    const message = error.message;
+    if (typeof message === "string") return message;
+  }
+  return fallback;
+}
+
 export function EventForm({ event }: { event?: BukaEvent }) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -105,7 +114,7 @@ export function EventForm({ event }: { event?: BukaEvent }) {
       }
       navigate({ to: "/host" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not save the event");
+      toast.error(errorMessage(error, "Could not save the event"));
     } finally {
       setSaving(false);
     }
