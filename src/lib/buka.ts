@@ -65,6 +65,8 @@ export type BukaEvent = {
   event_type: "ticketed" | "free_ad_slot";
   status: "draft" | "upcoming" | "live" | "ended";
   cover_image_url: string | null;
+  video_path?: string | null;
+  video_url?: string | null;
   is_published: boolean;
   is_flagged: boolean;
   view_count: number;

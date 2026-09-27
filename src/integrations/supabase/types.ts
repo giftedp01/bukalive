@@ -74,6 +74,8 @@ export type Database = {
           updated_at: string
           view_count: number
           visit_url: string | null
+          video_path: string | null
+          video_url: string | null
         }
         Insert: {
           book_url?: string | null
@@ -102,6 +104,8 @@ export type Database = {
           updated_at?: string
           view_count?: number
           visit_url?: string | null
+          video_path?: string | null
+          video_url?: string | null
         }
         Update: {
           book_url?: string | null
@@ -130,6 +134,8 @@ export type Database = {
           updated_at?: string
           view_count?: number
           visit_url?: string | null
+          video_path?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
