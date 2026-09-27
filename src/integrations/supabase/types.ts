@@ -51,6 +51,7 @@ export type Database = {
           book_url: string | null
           category: Database["public"]["Enums"]["event_category"]
           category_id: string | null
+          country_id: string | null
           cover_image_url: string | null
           created_at: string
           currency: string
@@ -78,6 +79,7 @@ export type Database = {
           book_url?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
+          country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
@@ -105,6 +107,7 @@ export type Database = {
           book_url?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
+          country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string

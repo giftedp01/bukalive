@@ -11,9 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CoverImage } from "@/components/CoverImage";
 import { CategorySelector } from "@/components/browse/CategorySelector";
-import { DestinationSelector } from "@/components/browse/DestinationSelector";
-import { ProvinceSelector } from "@/components/browse/ProvinceSelector";
-import { PROVINCES } from "@/data/provinces";
+import { CountrySelector } from "@/components/browse/CountrySelector";
 import { supabase } from "@/integrations/supabase/client";
 import { type BukaEvent } from "@/lib/buka";
 import { useAuth } from "@/lib/auth";
@@ -30,8 +28,8 @@ export function EventForm({ event }: { event?: BukaEvent }) {
   const [title, setTitle] = useState(event?.title ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
   const [categoryId, setCategoryId] = useState(event?.category_id ?? undefined);
-  const [provinceId, setProvinceId] = useState(event?.province_id ?? undefined);
-  const [destinationId, setDestinationId] = useState(event?.destination_id ?? undefined);
+  const [countryId, setCountryId] = useState(event?.country_id ?? "ZA");
+  const [location, setLocation] = useState(event?.location ?? "");
   const [scheduledAt, setScheduledAt] = useState(
     event
       ? toLocalInput(event.scheduled_at)
@@ -46,11 +44,6 @@ export function EventForm({ event }: { event?: BukaEvent }) {
   const [published, setPublished] = useState(event?.is_published ?? false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const selectedProvince = PROVINCES.find((province) => province.id === provinceId);
-  const selectedDestination = selectedProvince?.destinations.find(
-    (destination) => destination.id === destinationId,
-  );
-
   const uploadCover = async (file: File) => {
     if (!user) return;
     setUploading(true);
@@ -74,8 +67,8 @@ export function EventForm({ event }: { event?: BukaEvent }) {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!categoryId || !provinceId || !selectedProvince || !destinationId || !selectedDestination) {
-      toast.error("Choose a province, destination, and category");
+    if (!categoryId || !countryId) {
+      toast.error("Choose a country and category");
       return;
     }
     setSaving(true);
@@ -85,9 +78,8 @@ export function EventForm({ event }: { event?: BukaEvent }) {
         title,
         description,
         category_id: categoryId,
-        province_id: provinceId,
-        destination_id: destinationId,
-        location: `${selectedDestination.name}, ${selectedProvince.name}`,
+        country_id: countryId,
+        location: location.trim(),
         scheduled_at: new Date(scheduledAt).toISOString(),
         duration_minutes: Number(duration) || 60,
         price_cents: eventType === "ticketed" ? Math.round(Number(price) * 100) || 0 : 0,
@@ -144,18 +136,21 @@ export function EventForm({ event }: { event?: BukaEvent }) {
       </div>
 
       <div className="space-y-4">
-        <ProvinceSelector
-          value={provinceId}
+        <CountrySelector
+          value={countryId}
           onChange={(id) => {
-            setProvinceId(id);
-            setDestinationId(undefined);
+            if (id) setCountryId(id);
           }}
         />
-        <DestinationSelector
-          provinceId={provinceId}
-          value={destinationId}
-          onChange={setDestinationId}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="location">City or area</Label>
+          <Input
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Cape Town"
+          />
+        </div>
         <CategorySelector value={categoryId} onChange={setCategoryId} />
       </div>
 
