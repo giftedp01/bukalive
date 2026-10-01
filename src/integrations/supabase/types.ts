@@ -14,24 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      businesses: {
+        Row: {
+          business_type: string
+          category_id: string | null
+          city: string
+          country_id: string
+          created_at: string
+          description: string
+          destination_slug: string | null
+          id: string
+          is_sample: boolean
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          slug: string
+          summary: string
+          updated_at: string
+          verification_status: string
+          website: string | null
+        }
+        Insert: {
+          business_type?: string
+          category_id?: string | null
+          city?: string
+          country_id: string
+          created_at?: string
+          description?: string
+          destination_slug?: string | null
+          id?: string
+          is_sample?: boolean
+          logo_url?: string | null
+          name: string
+          owner_id?: string | null
+          slug: string
+          summary?: string
+          updated_at?: string
+          verification_status?: string
+          website?: string | null
+        }
+        Update: {
+          business_type?: string
+          category_id?: string | null
+          city?: string
+          country_id?: string
+          created_at?: string
+          description?: string
+          destination_slug?: string | null
+          id?: string
+          is_sample?: boolean
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          slug?: string
+          summary?: string
+          updated_at?: string
+          verification_status?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
+          answered_at: string | null
           event_id: string
           id: string
+          is_question: boolean
           message: string
           sent_at: string
           user_id: string
         }
         Insert: {
+          answered_at?: string | null
           event_id: string
           id?: string
+          is_question?: boolean
           message: string
           sent_at?: string
           user_id: string
         }
         Update: {
+          answered_at?: string | null
           event_id?: string
           id?: string
+          is_question?: boolean
           message?: string
           sent_at?: string
           user_id?: string
@@ -46,11 +112,76 @@ export type Database = {
           },
         ]
       }
+      destinations: {
+        Row: {
+          best_time: string | null
+          category_id: string | null
+          city: string
+          country_id: string
+          cover_image_url: string | null
+          created_at: string
+          description: string
+          id: string
+          image_key: string | null
+          is_featured: boolean
+          is_sample: boolean
+          latitude: number | null
+          longitude: number | null
+          name: string
+          region: string
+          slug: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          best_time?: string | null
+          category_id?: string | null
+          city?: string
+          country_id: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_key?: string | null
+          is_featured?: boolean
+          is_sample?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          region?: string
+          slug: string
+          summary?: string
+          updated_at?: string
+        }
+        Update: {
+          best_time?: string | null
+          category_id?: string | null
+          city?: string
+          country_id?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_key?: string | null
+          is_featured?: boolean
+          is_sample?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          region?: string
+          slug?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           book_url: string | null
+          business_id: string | null
           category: Database["public"]["Enums"]["event_category"]
           category_id: string | null
+          country_id: string | null
           cover_image_url: string | null
           created_at: string
           currency: string
@@ -62,22 +193,30 @@ export type Database = {
           id: string
           is_flagged: boolean
           is_published: boolean
+          is_sample: boolean
+          latitude: number | null
           location: string
+          longitude: number | null
           price_cents: number
           province_id: string | null
+          replay_url: string | null
           scheduled_at: string
           status: Database["public"]["Enums"]["event_status"]
           stay_url: string | null
           sub_experiences: Json
+          subcategory: string | null
           title: string
           updated_at: string
           view_count: number
+          viewer_count: number
           visit_url: string | null
         }
         Insert: {
           book_url?: string | null
+          business_id?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
+          country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
@@ -89,22 +228,30 @@ export type Database = {
           id?: string
           is_flagged?: boolean
           is_published?: boolean
+          is_sample?: boolean
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           price_cents?: number
           province_id?: string | null
+          replay_url?: string | null
           scheduled_at: string
           status?: Database["public"]["Enums"]["event_status"]
           stay_url?: string | null
           sub_experiences?: Json
+          subcategory?: string | null
           title: string
           updated_at?: string
           view_count?: number
+          viewer_count?: number
           visit_url?: string | null
         }
         Update: {
           book_url?: string | null
+          business_id?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
+          country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
@@ -116,19 +263,72 @@ export type Database = {
           id?: string
           is_flagged?: boolean
           is_published?: boolean
+          is_sample?: boolean
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           price_cents?: number
           province_id?: string | null
+          replay_url?: string | null
           scheduled_at?: string
           status?: Database["public"]["Enums"]["event_status"]
           stay_url?: string | null
           sub_experiences?: Json
+          subcategory?: string | null
           title?: string
           updated_at?: string
           view_count?: number
+          viewer_count?: number
           visit_url?: string | null
         }
         Relationships: []
+      }
+      listings: {
+        Row: {
+          business_id: string | null
+          created_at: string
+          destination_slug: string
+          id: string
+          is_sample: boolean
+          kind: string
+          name: string
+          price_from: string | null
+          summary: string
+          url: string | null
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string
+          destination_slug: string
+          id?: string
+          is_sample?: boolean
+          kind: string
+          name: string
+          price_from?: string | null
+          summary?: string
+          url?: string | null
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string
+          destination_slug?: string
+          id?: string
+          is_sample?: boolean
+          kind?: string
+          name?: string
+          price_from?: string | null
+          summary?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -209,6 +409,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      saves: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
