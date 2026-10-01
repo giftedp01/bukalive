@@ -51,7 +51,6 @@ export type Database = {
           book_url: string | null
           category: Database["public"]["Enums"]["event_category"]
           category_id: string | null
-          country_id: string | null
           cover_image_url: string | null
           created_at: string
           currency: string
@@ -74,14 +73,11 @@ export type Database = {
           updated_at: string
           view_count: number
           visit_url: string | null
-          video_path: string | null
-          video_url: string | null
         }
         Insert: {
           book_url?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
-          country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
@@ -104,14 +100,11 @@ export type Database = {
           updated_at?: string
           view_count?: number
           visit_url?: string | null
-          video_path?: string | null
-          video_url?: string | null
         }
         Update: {
           book_url?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
-          country_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           currency?: string
@@ -134,8 +127,6 @@ export type Database = {
           updated_at?: string
           view_count?: number
           visit_url?: string | null
-          video_path?: string | null
-          video_url?: string | null
         }
         Relationships: []
       }
