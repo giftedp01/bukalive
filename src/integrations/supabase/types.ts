@@ -281,7 +281,15 @@ export type Database = {
           viewer_count?: number
           visit_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       listings: {
         Row: {
