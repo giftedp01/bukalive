@@ -26,14 +26,20 @@ export function CoverImage({
   path,
   alt,
   className,
+  fallback,
+  eager,
 }: {
   path: string | null | undefined;
   alt: string;
   className?: string;
+  /** Bundled image used when there is no uploaded cover (e.g. destination photo). */
+  fallback?: string | undefined;
+  eager?: boolean;
 }) {
   const { data: url } = useCoverUrl(path);
+  const src = url ?? fallback;
 
-  if (!url) {
+  if (!src) {
     return (
       <div
         className={cn(
@@ -47,5 +53,13 @@ export function CoverImage({
     );
   }
 
-  return <img src={url} alt={alt} loading="lazy" className={cn("object-cover", className)} />;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      className={cn("object-cover", className)}
+    />
+  );
 }
