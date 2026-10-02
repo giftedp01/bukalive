@@ -73,7 +73,23 @@ export type BukaEvent = {
   created_at: string;
   // Optional taxonomy metadata
   category_id?: string | null;
+  subcategory?: string | null;
   country_id?: string | null;
+  /** Destination slug (see destinations table). */
+  destination_id?: string | null;
+  business_id?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  viewer_count?: number;
+  replay_url?: string | null;
+  is_sample?: boolean;
+  business?: {
+    id: string;
+    slug: string;
+    name: string;
+    verification_status: string;
+    is_sample: boolean;
+  } | null;
   // Outbound action links (optional — just URLs, no booking system)
   book_url?: string | null;
   visit_url?: string | null;
