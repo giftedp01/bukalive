@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { ExperienceJourney } from "@/components/ExperienceJourney";
+import { EVENT_SELECT } from "@/lib/destinations";
 import {
   categoryLabel,
   eventPhase,
@@ -50,7 +52,7 @@ function EventDetail() {
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
+      const { data, error } = await supabase.from("events").select(EVENT_SELECT).eq("id", eventId).maybeSingle();
       if (error) throw error;
       if (!data) return null;
       const raw = (data as { sub_experiences?: unknown }).sub_experiences;
@@ -172,11 +174,13 @@ function EventDetail() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <section>
-            <h2 className="font-display text-xl">About this broadcast</h2>
+            <h2 className="font-display text-xl">About this experience</h2>
             <p className="mt-2 whitespace-pre-line text-muted-foreground">
               {event.description || "The host hasn't added a description yet."}
             </p>
           </section>
+
+          <ExperienceJourney event={event} />
 
           {event.subExperiences && event.subExperiences.length > 0 && (
             <SubExperienceList
@@ -193,9 +197,9 @@ function EventDetail() {
                   <Radio className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
-                  <p className="font-medium">{host?.full_name || "BukaLive host"}</p>
+                  <p className="font-medium">{event.business?.name || host?.full_name || "BukaLive host"}</p>
                   <p className="text-sm text-muted-foreground">
-                    {host?.host_bio || host?.bio || "Verified BukaLive host."}
+                    {host?.host_bio || host?.bio || "BukaLive host."}
                   </p>
                 </div>
               </CardContent>
