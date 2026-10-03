@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { ExperienceJourney } from "@/components/ExperienceJourney";
+import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
 import {
   categoryLabel,
   eventPhase,
@@ -50,7 +52,7 @@ function EventDetail() {
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
+      const { data, error } = await supabase.from("events").select(EVENT_SELECT).eq("id", eventId).maybeSingle();
       if (error) throw error;
       if (!data) return null;
       const raw = (data as { sub_experiences?: unknown }).sub_experiences;
@@ -139,7 +141,7 @@ function EventDetail() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="relative overflow-hidden rounded-3xl">
-        <CoverImage path={event.cover_image_url} alt={event.title} className="h-72 w-full sm:h-96" />
+        <EventCover event={event} />
         <div className="absolute inset-0 bg-scrim" aria-hidden />
         <div className="absolute bottom-5 left-5 right-5 text-primary-foreground">
           <div className="mb-3 flex flex-wrap gap-2">
@@ -172,11 +174,13 @@ function EventDetail() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <section>
-            <h2 className="font-display text-xl">About this broadcast</h2>
+            <h2 className="font-display text-xl">About this experience</h2>
             <p className="mt-2 whitespace-pre-line text-muted-foreground">
               {event.description || "The host hasn't added a description yet."}
             </p>
           </section>
+
+          <ExperienceJourney event={event} />
 
           {event.subExperiences && event.subExperiences.length > 0 && (
             <SubExperienceList
@@ -193,9 +197,9 @@ function EventDetail() {
                   <Radio className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
-                  <p className="font-medium">{host?.full_name || "BukaLive host"}</p>
+                  <p className="font-medium">{event.business?.name || host?.full_name || "BukaLive host"}</p>
                   <p className="text-sm text-muted-foreground">
-                    {host?.host_bio || host?.bio || "Verified BukaLive host."}
+                    {event.business ? event.business.is_sample ? "Sample business shown for demonstration." : "" : host?.host_bio || host?.bio || "BukaLive host."}
                   </p>
                 </div>
               </CardContent>
@@ -267,5 +271,13 @@ function EventDetail() {
         </aside>
       </div>
     </div>
+  );
+}
+
+function EventCover({ event }: { event: BukaEvent }) {
+  const { data: destinations } = useQuery(destinationsQuery);
+  const d = destinations?.find((x) => x.slug === event.destination_id);
+  return (
+    <CoverImage path={event.cover_image_url} fallback={destinationImage(d)} eager alt={event.title} className="h-72 w-full sm:h-96" />
   );
 }

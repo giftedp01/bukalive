@@ -40,6 +40,7 @@ function HostDashboard() {
         .from("events")
         .select("*")
         .eq("host_id", user!.id)
+        .eq("is_sample" as never, false)
         .order("scheduled_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as BukaEvent[];

@@ -15,6 +15,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as BusinessesSlugRouteImport } from './routes/businesses.$slug'
+import { Route as DestinationsIndexRouteImport } from './routes/destinations.index'
+import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slug'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as HostIndexRouteImport } from './routes/host.index'
 import { Route as HostApplyRouteImport } from './routes/host.apply'
@@ -50,6 +53,21 @@ const HostRoute = HostRouteImport.update({
 const TicketsRoute = TicketsRouteImport.update({
   id: '/tickets',
   path: '/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessesSlugRoute = BusinessesSlugRouteImport.update({
+  id: '/businesses/$slug',
+  path: '/businesses/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DestinationsIndexRoute = DestinationsIndexRouteImport.update({
+  id: '/destinations/',
+  path: '/destinations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DestinationsSlugRoute = DestinationsSlugRouteImport.update({
+  id: '/destinations/$slug',
+  path: '/destinations/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsEventIdRoute = EventsEventIdRouteImport.update({
@@ -90,9 +108,12 @@ export interface FileRoutesByFullPath {
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
   '/tickets': typeof TicketsRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
+  '/destinations/$slug': typeof DestinationsSlugRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/host/apply': typeof HostApplyRoute
   '/watch/$eventId': typeof WatchEventIdRoute
+  '/destinations/': typeof DestinationsIndexRoute
   '/host/': typeof HostIndexRoute
   '/host/events/$eventId': typeof HostEventsEventIdRoute
   '/host/events/new': typeof HostEventsNewRoute
@@ -103,9 +124,12 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/tickets': typeof TicketsRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
+  '/destinations/$slug': typeof DestinationsSlugRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/host/apply': typeof HostApplyRoute
   '/watch/$eventId': typeof WatchEventIdRoute
+  '/destinations': typeof DestinationsIndexRoute
   '/host': typeof HostIndexRoute
   '/host/events/$eventId': typeof HostEventsEventIdRoute
   '/host/events/new': typeof HostEventsNewRoute
@@ -118,9 +142,12 @@ export interface FileRoutesById {
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
   '/tickets': typeof TicketsRoute
+  '/businesses/$slug': typeof BusinessesSlugRoute
+  '/destinations/$slug': typeof DestinationsSlugRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/host/apply': typeof HostApplyRoute
   '/watch/$eventId': typeof WatchEventIdRoute
+  '/destinations/': typeof DestinationsIndexRoute
   '/host/': typeof HostIndexRoute
   '/host/events/$eventId': typeof HostEventsEventIdRoute
   '/host/events/new': typeof HostEventsNewRoute
@@ -134,9 +161,12 @@ export interface FileRouteTypes {
     | '/browse'
     | '/host'
     | '/tickets'
+    | '/businesses/$slug'
+    | '/destinations/$slug'
     | '/events/$eventId'
     | '/host/apply'
     | '/watch/$eventId'
+    | '/destinations/'
     | '/host/'
     | '/host/events/$eventId'
     | '/host/events/new'
@@ -147,9 +177,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/tickets'
+    | '/businesses/$slug'
+    | '/destinations/$slug'
     | '/events/$eventId'
     | '/host/apply'
     | '/watch/$eventId'
+    | '/destinations'
     | '/host'
     | '/host/events/$eventId'
     | '/host/events/new'
@@ -161,9 +194,12 @@ export interface FileRouteTypes {
     | '/browse'
     | '/host'
     | '/tickets'
+    | '/businesses/$slug'
+    | '/destinations/$slug'
     | '/events/$eventId'
     | '/host/apply'
     | '/watch/$eventId'
+    | '/destinations/'
     | '/host/'
     | '/host/events/$eventId'
     | '/host/events/new'
@@ -176,8 +212,11 @@ export interface RootRouteChildren {
   BrowseRoute: typeof BrowseRoute
   HostRoute: typeof HostRouteWithChildren
   TicketsRoute: typeof TicketsRoute
+  BusinessesSlugRoute: typeof BusinessesSlugRoute
+  DestinationsSlugRoute: typeof DestinationsSlugRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
   WatchEventIdRoute: typeof WatchEventIdRoute
+  DestinationsIndexRoute: typeof DestinationsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -222,6 +261,27 @@ declare module '@tanstack/react-router' {
       path: '/tickets'
       fullPath: '/tickets'
       preLoaderRoute: typeof TicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/businesses/$slug': {
+      id: '/businesses/$slug'
+      path: '/businesses/$slug'
+      fullPath: '/businesses/$slug'
+      preLoaderRoute: typeof BusinessesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/destinations/': {
+      id: '/destinations/'
+      path: '/destinations'
+      fullPath: '/destinations/'
+      preLoaderRoute: typeof DestinationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/destinations/$slug': {
+      id: '/destinations/$slug'
+      path: '/destinations/$slug'
+      fullPath: '/destinations/$slug'
+      preLoaderRoute: typeof DestinationsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/$eventId': {
@@ -292,8 +352,11 @@ const rootRouteChildren: RootRouteChildren = {
   BrowseRoute: BrowseRoute,
   HostRoute: HostRouteWithChildren,
   TicketsRoute: TicketsRoute,
+  BusinessesSlugRoute: BusinessesSlugRoute,
+  DestinationsSlugRoute: DestinationsSlugRoute,
   EventsEventIdRoute: EventsEventIdRoute,
   WatchEventIdRoute: WatchEventIdRoute,
+  DestinationsIndexRoute: DestinationsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
