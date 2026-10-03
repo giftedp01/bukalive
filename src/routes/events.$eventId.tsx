@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { ExperienceJourney } from "@/components/ExperienceJourney";
-import { EVENT_SELECT } from "@/lib/destinations";
+import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
 import {
   categoryLabel,
   eventPhase,
@@ -141,7 +141,7 @@ function EventDetail() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="relative overflow-hidden rounded-3xl">
-        <CoverImage path={event.cover_image_url} alt={event.title} className="h-72 w-full sm:h-96" />
+        <EventCover event={event} />
         <div className="absolute inset-0 bg-scrim" aria-hidden />
         <div className="absolute bottom-5 left-5 right-5 text-primary-foreground">
           <div className="mb-3 flex flex-wrap gap-2">
@@ -199,7 +199,7 @@ function EventDetail() {
                 <div>
                   <p className="font-medium">{event.business?.name || host?.full_name || "BukaLive host"}</p>
                   <p className="text-sm text-muted-foreground">
-                    {host?.host_bio || host?.bio || "BukaLive host."}
+                    {event.business ? event.business.is_sample ? "Sample business shown for demonstration." : "" : host?.host_bio || host?.bio || "BukaLive host."}
                   </p>
                 </div>
               </CardContent>
@@ -271,5 +271,13 @@ function EventDetail() {
         </aside>
       </div>
     </div>
+  );
+}
+
+function EventCover({ event }: { event: BukaEvent }) {
+  const { data: destinations } = useQuery(destinationsQuery);
+  const d = destinations?.find((x) => x.slug === event.destination_id);
+  return (
+    <CoverImage path={event.cover_image_url} fallback={destinationImage(d)} eager alt={event.title} className="h-72 w-full sm:h-96" />
   );
 }

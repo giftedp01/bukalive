@@ -86,7 +86,7 @@ export type Listing = {
 
 export const LISTING_KINDS: { kind: Listing["kind"]; label: string; icon: string }[] = [
   { kind: "stay", label: "Stay nearby", icon: "🛏️" },
-  { kind: "activity", label: "Other activities", icon: "🧭" },
+  { kind: "activity", label: "Other activities", icon: "🎯" },
   { kind: "food", label: "Food & restaurants", icon: "🍽️" },
   { kind: "transport", label: "Getting there", icon: "✈️" },
   { kind: "attraction", label: "Attractions", icon: "📍" },
