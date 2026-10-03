@@ -30,12 +30,15 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 md:flex">
           <Button variant="ghost" asChild>
-            <Link to="/browse">Browse</Link>
+            <Link to="/browse">Explore</Link>
           </Button>
           <Button variant="ghost" asChild>
             <Link to="/browse" search={{ when: "live" }}>
               Live now
             </Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link to="/destinations">Destinations</Link>
           </Button>
           {user && (
             <Button variant="ghost" asChild>

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { type BukaEvent } from "@/lib/buka";
+import { EVENT_SELECT } from "@/lib/destinations";
 
 type BrowseSearch = {
   q?: string | undefined;
@@ -70,7 +71,7 @@ function Browse() {
     queryFn: async () => {
       let query = supabase
         .from("events")
-        .select("*")
+        .select(EVENT_SELECT)
         .eq("is_published", true)
         .eq("is_flagged", false);
 
@@ -78,13 +79,13 @@ function Browse() {
       if (when === "upcoming") {
         query = query.neq("status", "ended").gte("scheduled_at", new Date().toISOString());
       }
-      if (q.trim()) query = query.or(`title.ilike.%${q}%,location.ilike.%${q}%`);
+      if (q.trim()) query = query.or(`title.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%,subcategory.ilike.%${q}%`);
       if (tourism_category) query = query.eq("category_id", tourism_category);
       if (country) query = query.eq("country_id", country);
 
       const { data, error } = await query.order("scheduled_at", { ascending: true }).limit(60);
       if (error) throw error;
-      return (data ?? []) as BukaEvent[];
+      return (data ?? []) as unknown as BukaEvent[];
     },
   });
 
