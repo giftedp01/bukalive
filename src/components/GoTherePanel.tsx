@@ -6,7 +6,7 @@ import { SampleBadge } from "@/components/TrustBadges";
 import { LISTING_KINDS, listingsQuery } from "@/lib/destinations";
 
 /** The "Go There" journey: everything around a destination, grouped by need. */
-export function GoTherePanel({ destinationSlug, bookUrl }: { destinationSlug: string; bookUrl?: string | null }) {
+export function GoTherePanel({ destinationSlug, bookUrl }: { destinationSlug: string; bookUrl?: string | null | undefined }) {
   const { data: listings = [], isLoading } = useQuery(listingsQuery(destinationSlug));
 
   return (
