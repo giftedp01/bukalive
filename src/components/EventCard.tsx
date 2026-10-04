@@ -45,6 +45,8 @@ export function EventCard({
       return !!data;
     },
   });
+  const hasChatAccess = !!ownsTicket || user?.id === event.host_id;
+  const canOpenChat = hasChatAccess && isWatchable(event);
   const destination = destinations?.find((d) => d.slug === event.destination_id);
   const country = countryName(event.country_id ?? destination?.country_id);
   const place = destination?.name ?? event.location;
@@ -121,48 +123,65 @@ export function EventCard({
         </div>
       </Link>
 
-      <div className="flex items-center justify-between border-t px-3 py-2">
-        <div className="flex min-w-0 items-center gap-1">
-          <SaveButton itemType="experience" itemId={event.id} like size="sm" variant="ghost" />
-          {(!user || !ticketStatusLoading) && (ownsTicket || phase !== "ended") && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className={
-                ownsTicket
-                  ? "h-8 gap-1 px-2 text-green-800 hover:bg-green-100 hover:text-green-900 dark:text-green-300 dark:hover:bg-green-950/40"
-                  : "h-8 gap-1 px-2 bg-red-50 text-red-800 hover:bg-red-100 hover:text-red-900 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
-              }
-              asChild
-            >
-              <Link
-                to={ownsTicket && isWatchable(event) ? "/watch/$eventId" : destinationPath}
-                params={{ eventId: event.id }}
-                aria-label={
-                  ownsTicket ? `Ticket owned for ${event.title}` : `Get a ticket for ${event.title}`
-                }
-              >
-                {ownsTicket ? (
-                  <TicketCheck className="h-4 w-4" aria-hidden />
-                ) : (
-                  <Ticket className="h-4 w-4" aria-hidden />
-                )}
-                <span>{ownsTicket ? "Ticket owned" : "Get ticket"}</span>
-              </Link>
-            </Button>
-          )}
-        </div>
-        {phase !== "ended" && (
-          <Button variant="ghost" size="sm" asChild>
+      <div className="flex flex-wrap items-center gap-1 border-t px-2 py-2">
+        <SaveButton
+          itemType="experience"
+          itemId={event.id}
+          like
+          size="sm"
+          variant="ghost"
+          className="h-8 shrink-0 px-2"
+        />
+        {(!user || !ticketStatusLoading) && (ownsTicket || phase !== "ended") && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className={
+              ownsTicket
+                ? "h-8 shrink-0 gap-1 px-2 text-green-800 hover:bg-green-100 hover:text-green-900 dark:text-green-300 dark:hover:bg-green-950/40"
+                : "h-8 shrink-0 gap-1 bg-red-50 px-2 text-red-800 hover:bg-red-100 hover:text-red-900 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
+            }
+            asChild
+          >
             <Link
-              to={ownsTicket && isWatchable(event) ? "/watch/$eventId" : "/events/$eventId"}
+              to={ownsTicket && isWatchable(event) ? "/watch/$eventId" : destinationPath}
               params={{ eventId: event.id }}
-              aria-label={`Comment on ${event.title}`}
+              aria-label={
+                ownsTicket ? `Ticket owned for ${event.title}` : `Get a ticket for ${event.title}`
+              }
             >
-              <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden /> Comment
+              {ownsTicket ? (
+                <TicketCheck className="h-4 w-4" aria-hidden />
+              ) : (
+                <Ticket className="h-4 w-4" aria-hidden />
+              )}
+              <span>{ownsTicket ? "Ticket owned" : "Get ticket"}</span>
             </Link>
           </Button>
         )}
+        {hasChatAccess &&
+          phase !== "ended" &&
+          (canOpenChat ? (
+            <Button variant="ghost" size="sm" className="h-8 shrink-0 px-2" asChild>
+              <Link
+                to="/watch/$eventId"
+                params={{ eventId: event.id }}
+                aria-label={`Open live chat for ${event.title}`}
+              >
+                <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden /> Comment
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 shrink-0 px-2"
+              disabled
+              title="Chat opens when the event starts"
+            >
+              <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden /> Chat opens at start
+            </Button>
+          ))}
       </div>
     </article>
   );
