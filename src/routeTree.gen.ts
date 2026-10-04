@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as RequestLivestreamRouteImport } from './routes/request-livestream'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as BusinessesSlugRouteImport } from './routes/businesses.$slug'
 import { Route as DestinationsIndexRouteImport } from './routes/destinations.index'
@@ -61,6 +62,11 @@ const HostRoute = HostRouteImport.update({
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestLivestreamRoute = RequestLivestreamRouteImport.update({
+  id: '/request-livestream',
+  path: '/request-livestream',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TicketsRoute = TicketsRouteImport.update({
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
   '/map': typeof MapRoute
+  '/request-livestream': typeof RequestLivestreamRoute
   '/tickets': typeof TicketsRoute
   '/businesses/$slug': typeof BusinessesSlugRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/map': typeof MapRoute
+  '/request-livestream': typeof RequestLivestreamRoute
   '/tickets': typeof TicketsRoute
   '/businesses/$slug': typeof BusinessesSlugRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
   '/map': typeof MapRoute
+  '/request-livestream': typeof RequestLivestreamRoute
   '/tickets': typeof TicketsRoute
   '/businesses/$slug': typeof BusinessesSlugRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/host'
     | '/map'
+    | '/request-livestream'
     | '/tickets'
     | '/businesses/$slug'
     | '/destinations/$slug'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/map'
+    | '/request-livestream'
     | '/tickets'
     | '/businesses/$slug'
     | '/destinations/$slug'
@@ -228,6 +239,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/host'
     | '/map'
+    | '/request-livestream'
     | '/tickets'
     | '/businesses/$slug'
     | '/destinations/$slug'
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   BrowseRoute: typeof BrowseRoute
   HostRoute: typeof HostRouteWithChildren
   MapRoute: typeof MapRoute
+  RequestLivestreamRoute: typeof RequestLivestreamRoute
   TicketsRoute: typeof TicketsRoute
   BusinessesSlugRoute: typeof BusinessesSlugRoute
   DestinationsSlugRoute: typeof DestinationsSlugRoute
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/map'
       preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request-livestream': {
+      id: '/request-livestream'
+      path: '/request-livestream'
+      fullPath: '/request-livestream'
+      preLoaderRoute: typeof RequestLivestreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tickets': {
@@ -413,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrowseRoute: BrowseRoute,
   HostRoute: HostRouteWithChildren,
   MapRoute: MapRoute,
+  RequestLivestreamRoute: RequestLivestreamRoute,
   TicketsRoute: TicketsRoute,
   BusinessesSlugRoute: BusinessesSlugRoute,
   DestinationsSlugRoute: DestinationsSlugRoute,

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Radio, Search } from "lucide-react";
+import { ArrowRight, Radio, Search, Video } from "lucide-react";
 import { useState } from "react";
 
 import heroImage from "@/assets/hero-safari.jpg";
@@ -208,6 +208,11 @@ function Home() {
             </Button>
             <Button size="lg" variant="secondary" asChild>
               <Link to="/host/apply">BECOME A HOST</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/request-livestream">
+                <Video className="mr-2 h-4 w-4" aria-hidden /> ASK FOR A LIVESTREAM
+              </Link>
             </Button>
           </div>
         </div>

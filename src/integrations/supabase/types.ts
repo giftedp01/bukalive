@@ -184,6 +184,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      livestream_requests: {
+        Row: {
+          created_at: string;
+          description: string;
+          format: string;
+          id: string;
+          location: string;
+          preferred_date: string | null;
+          requester_id: string;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          description: string;
+          format: string;
+          id?: string;
+          location: string;
+          preferred_date?: string | null;
+          requester_id: string;
+          status?: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string;
+          format?: string;
+          id?: string;
+          location?: string;
+          preferred_date?: string | null;
+          requester_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "livestream_requests_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       purchases: {
         Row: {
           amount_cents: number;

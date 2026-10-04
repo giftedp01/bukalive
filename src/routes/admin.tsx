@@ -53,6 +53,18 @@ type ReportRow = {
   reporter: { full_name: string | null; email: string | null } | null;
 };
 
+type LivestreamRequestRow = {
+  id: string;
+  requester_id: string;
+  location: string;
+  description: string;
+  format: "drone" | "360" | "either";
+  preferred_date: string | null;
+  status: "new" | "reviewing" | "scheduled" | "closed";
+  created_at: string;
+  requester: { full_name: string | null; email: string | null } | null;
+};
+
 function AdminPage() {
   const { isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
@@ -95,6 +107,19 @@ function AdminPage() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as ReportRow[];
+    },
+  });
+
+  const { data: livestreamRequests, isLoading: livestreamRequestsLoading } = useQuery({
+    queryKey: ["admin-livestream-requests"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("livestream_requests")
+        .select("*, requester:profiles(full_name, email)")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as LivestreamRequestRow[];
     },
   });
 
@@ -147,6 +172,22 @@ function AdminPage() {
     queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
+  const updateLivestreamRequest = async (
+    request: LivestreamRequestRow,
+    status: LivestreamRequestRow["status"],
+  ) => {
+    const { error } = await supabase
+      .from("livestream_requests")
+      .update({ status })
+      .eq("id", request.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Livestream request marked ${status}`);
+    queryClient.invalidateQueries({ queryKey: ["admin-livestream-requests"] });
+  };
+
   if (loading) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-10">
@@ -180,12 +221,13 @@ function AdminPage() {
         Moderate hosts and events across BukaLive.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
           { label: "People", value: String(allProfiles.length) },
           { label: "Pending hosts", value: String(pending.length) },
           { label: "Events", value: String(allEvents.length) },
           { label: "Flagged", value: String(allEvents.filter((e) => e.is_flagged).length) },
+          { label: "Livestream requests", value: String(livestreamRequests?.length ?? 0) },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-6">
@@ -201,6 +243,7 @@ function AdminPage() {
           <TabsTrigger value="hosts">Host applications</TabsTrigger>
           <TabsTrigger value="people">People</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="livestream-requests">Livestream requests</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
@@ -301,6 +344,64 @@ function AdminPage() {
                     <Trash2 className="mr-2 h-4 w-4" aria-hidden /> Remove
                   </Button>
                 </div>
+              </div>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="livestream-requests" className="mt-6 space-y-3">
+          {livestreamRequestsLoading ? (
+            <Skeleton className="h-24 rounded-2xl" />
+          ) : !livestreamRequests || livestreamRequests.length === 0 ? (
+            <p className="rounded-2xl bg-muted px-6 py-10 text-center text-sm text-muted-foreground">
+              No livestream requests yet.
+            </p>
+          ) : (
+            livestreamRequests.map((request) => (
+              <div key={request.id} className="rounded-2xl border bg-card p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-display text-lg">{request.location}</p>
+                      <Badge variant={request.status === "new" ? "default" : "secondary"}>
+                        {request.status}
+                      </Badge>
+                      <Badge variant="outline">
+                        {request.format === "360"
+                          ? "360°"
+                          : request.format === "drone"
+                            ? "Drone"
+                            : "Either camera"}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Requested by{" "}
+                      {request.requester?.full_name || request.requester?.email || "unknown"} ·{" "}
+                      {new Date(request.created_at).toLocaleDateString()}
+                      {request.preferred_date &&
+                        ` · Preferred date ${new Date(`${request.preferred_date}T00:00:00`).toLocaleDateString()}`}
+                    </p>
+                  </div>
+                  <select
+                    aria-label={`Update request status for ${request.location}`}
+                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                    value={request.status}
+                    onChange={(event) =>
+                      void updateLivestreamRequest(
+                        request,
+                        event.target.value as LivestreamRequestRow["status"],
+                      )
+                    }
+                  >
+                    <option value="new">New</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+                <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
+                  {request.description}
+                </p>
               </div>
             ))
           )}
