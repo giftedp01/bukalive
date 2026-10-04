@@ -332,25 +332,36 @@ function EventDetail() {
                 </Button>
               ) : owned ? (
                 <div className="space-y-2">
-                  <Button
-                    className="w-full"
-                    disabled={!isWatchable(event)}
-                    asChild={isWatchable(event)}
-                  >
-                    {isWatchable(event) ? (
-                      <Link to="/watch/$eventId" params={{ eventId: event.id }}>
-                        <Radio className="mr-2 h-4 w-4" aria-hidden /> Go to watch page
+                  {phase === "ended" &&
+                  (event.video_path || event.video_url || event.replay_url) ? (
+                    <Button className="w-full" asChild>
+                      <Link to="/replay/$eventId" params={{ eventId: event.id }}>
+                        <Radio className="mr-2 h-4 w-4" aria-hidden /> Watch replay
                       </Link>
-                    ) : (
-                      <span>
-                        <Ticket className="mr-2 inline h-4 w-4" aria-hidden /> Access unlocked
-                      </span>
-                    )}
-                  </Button>
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      disabled={!isWatchable(event)}
+                      asChild={isWatchable(event)}
+                    >
+                      {isWatchable(event) ? (
+                        <Link to="/watch/$eventId" params={{ eventId: event.id }}>
+                          <Radio className="mr-2 h-4 w-4" aria-hidden /> Go to watch page
+                        </Link>
+                      ) : (
+                        <span>
+                          <Ticket className="mr-2 inline h-4 w-4" aria-hidden /> Access unlocked
+                        </span>
+                      )}
+                    </Button>
+                  )}
                   <p className="text-center text-xs text-muted-foreground">
-                    {isWatchable(event)
-                      ? "The stream opens on this page."
-                      : "The watch page opens at the scheduled start time."}
+                    {phase === "ended" && (event.video_path || event.video_url || event.replay_url)
+                      ? "This event has a replay available."
+                      : isWatchable(event)
+                        ? "The stream opens on this page."
+                        : "The watch page opens at the scheduled start time."}
                   </p>
                 </div>
               ) : phase === "ended" ? (

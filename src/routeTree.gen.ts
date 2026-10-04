@@ -22,6 +22,7 @@ import { Route as DestinationsSlugRouteImport } from './routes/destinations.$slu
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 import { Route as HostIndexRouteImport } from './routes/host.index'
 import { Route as HostApplyRouteImport } from './routes/host.apply'
+import { Route as ReplayEventIdRouteImport } from './routes/replay.$eventId'
 import { Route as WatchEventIdRouteImport } from './routes/watch.$eventId'
 import { Route as HostEventsEventIdRouteImport } from './routes/host.events.$eventId'
 import { Route as HostEventsNewRouteImport } from './routes/host.events.new'
@@ -91,6 +92,11 @@ const HostApplyRoute = HostApplyRouteImport.update({
   path: '/apply',
   getParentRoute: () => HostRoute,
 } as any)
+const ReplayEventIdRoute = ReplayEventIdRouteImport.update({
+  id: '/replay/$eventId',
+  path: '/replay/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WatchEventIdRoute = WatchEventIdRouteImport.update({
   id: '/watch/$eventId',
   path: '/watch/$eventId',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/destinations/$slug': typeof DestinationsSlugRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/host/apply': typeof HostApplyRoute
+  '/replay/$eventId': typeof ReplayEventIdRoute
   '/watch/$eventId': typeof WatchEventIdRoute
   '/destinations/': typeof DestinationsIndexRoute
   '/host/': typeof HostIndexRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/destinations/$slug': typeof DestinationsSlugRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/host/apply': typeof HostApplyRoute
+  '/replay/$eventId': typeof ReplayEventIdRoute
   '/watch/$eventId': typeof WatchEventIdRoute
   '/destinations': typeof DestinationsIndexRoute
   '/host': typeof HostIndexRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/destinations/$slug': typeof DestinationsSlugRoute
   '/events/$eventId': typeof EventsEventIdRoute
   '/host/apply': typeof HostApplyRoute
+  '/replay/$eventId': typeof ReplayEventIdRoute
   '/watch/$eventId': typeof WatchEventIdRoute
   '/destinations/': typeof DestinationsIndexRoute
   '/host/': typeof HostIndexRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/destinations/$slug'
     | '/events/$eventId'
     | '/host/apply'
+    | '/replay/$eventId'
     | '/watch/$eventId'
     | '/destinations/'
     | '/host/'
@@ -192,6 +202,7 @@ export interface FileRouteTypes {
     | '/destinations/$slug'
     | '/events/$eventId'
     | '/host/apply'
+    | '/replay/$eventId'
     | '/watch/$eventId'
     | '/destinations'
     | '/host'
@@ -210,6 +221,7 @@ export interface FileRouteTypes {
     | '/destinations/$slug'
     | '/events/$eventId'
     | '/host/apply'
+    | '/replay/$eventId'
     | '/watch/$eventId'
     | '/destinations/'
     | '/host/'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   BusinessesSlugRoute: typeof BusinessesSlugRoute
   DestinationsSlugRoute: typeof DestinationsSlugRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
+  ReplayEventIdRoute: typeof ReplayEventIdRoute
   WatchEventIdRoute: typeof WatchEventIdRoute
   DestinationsIndexRoute: typeof DestinationsIndexRoute
 }
@@ -325,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HostApplyRouteImport
       parentRoute: typeof HostRoute
     }
+    '/replay/$eventId': {
+      id: '/replay/$eventId'
+      path: '/replay/$eventId'
+      fullPath: '/replay/$eventId'
+      preLoaderRoute: typeof ReplayEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/watch/$eventId': {
       id: '/watch/$eventId'
       path: '/watch/$eventId'
@@ -376,6 +396,7 @@ const rootRouteChildren: RootRouteChildren = {
   BusinessesSlugRoute: BusinessesSlugRoute,
   DestinationsSlugRoute: DestinationsSlugRoute,
   EventsEventIdRoute: EventsEventIdRoute,
+  ReplayEventIdRoute: ReplayEventIdRoute,
   WatchEventIdRoute: WatchEventIdRoute,
   DestinationsIndexRoute: DestinationsIndexRoute,
 }

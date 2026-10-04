@@ -17,9 +17,14 @@ export function EventCard({ event }: { event: BukaEvent }) {
   const country = countryName(event.country_id ?? destination?.country_id);
   const place = destination?.name ?? event.location;
 
+  const destinationPath =
+    phase === "ended" && (event.video_path || event.video_url || event.replay_url)
+      ? "/replay/$eventId"
+      : "/events/$eventId";
+
   return (
     <Link
-      to="/events/$eventId"
+      to={destinationPath}
       params={{ eventId: event.id }}
       className="card-hover group block overflow-hidden rounded-2xl bg-card shadow-soft"
     >
