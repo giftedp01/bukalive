@@ -94,11 +94,42 @@ function buildReply(prompt: string, events: BukaEvent[]) {
       ? `Buka AI suggests ${vibe} with these options.`
       : "Buka AI is scanning the live schedule for experiences that match your mood.";
 
-  return { intro, suggestions } as const;
+  const tips = [
+    lower.includes("food") || lower.includes("dinner")
+      ? "Lean into local energy: food, music, and cultural depth tend to perform best."
+      : lower.includes("nature") || lower.includes("sunrise")
+        ? "For slow travel, pick nature-led or sunrise-first experiences."
+        : lower.includes("culture") || lower.includes("art")
+          ? "Look for neighborhood-led experiences with local music, galleries, and stories."
+          : lower.includes("night") || lower.includes("party") || lower.includes("dj")
+            ? "If you want an easy evening, start with live events and then add a dinner stop."
+            : "Mix a live event with a relaxed local stop so the night feels easy and memorable.",
+    lower.includes("food") || lower.includes("night")
+      ? "If you want an easy evening, start with live events and then add a dinner stop."
+      : lower.includes("nature") || lower.includes("outdoor")
+        ? "Keep the pace gentle with a scenic walk, a local café, and a sunset finish."
+        : lower.includes("culture") || lower.includes("art")
+          ? "Choose a venue with music, food, and a walkable neighborhood to keep the energy rich but relaxed."
+          : "Keep the plan flexible so you can chase the best live moment of the night.",
+    lower.includes("nature") || lower.includes("sunrise")
+      ? "Aim for a sunrise-first experience, then build the rest of the day around a nearby market or local favorite."
+      : lower.includes("food") || lower.includes("dinner")
+        ? "Book the evening around a live performance or social crowd, then end with a slow dinner nearby."
+        : "Choose a route that balances one standout event with plenty of room to wander and linger.",
+  ];
+
+  return { intro, suggestions, tips } as const;
 }
 
 function AiPage() {
-  const [prompt, setPrompt] = useState("I want a warm, social night with music and good food");
+  const initialPrompt = "I want a warm, social night with music and good food";
+  const [prompt, setPrompt] = useState(initialPrompt);
+  const [submittedPrompt, setSubmittedPrompt] = useState(initialPrompt);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmittedPrompt(prompt.trim() || initialPrompt);
+  };
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["ai-suggestions"],
@@ -114,9 +145,9 @@ function AiPage() {
     },
   });
 
-  const { intro, suggestions } = useMemo(
-    () => buildReply(prompt || "live experiences", events),
-    [events, prompt],
+  const { intro, suggestions, tips } = useMemo(
+    () => buildReply(submittedPrompt || "live experiences", events),
+    [events, submittedPrompt],
   );
 
   const samplePrompts = [
@@ -139,7 +170,7 @@ function AiPage() {
         </div>
       </div>
 
-      <div className="rounded-3xl border bg-card p-4 shadow-soft sm:p-6">
+      <form className="rounded-3xl border bg-card p-4 shadow-soft sm:p-6" onSubmit={handleSubmit}>
         <label className="mb-3 block text-sm font-medium">
           Tell Buka AI what kind of trip you want
         </label>
@@ -150,7 +181,7 @@ function AiPage() {
             placeholder="Example: I want a city night out with rooftop views and live music"
             aria-label="Ask Buka AI"
           />
-          <Button type="button">Get ideas</Button>
+          <Button type="submit">Get ideas</Button>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -158,14 +189,17 @@ function AiPage() {
             <button
               key={sample}
               type="button"
-              onClick={() => setPrompt(sample)}
+              onClick={() => {
+                setPrompt(sample);
+                setSubmittedPrompt(sample);
+              }}
               className="rounded-full border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
             >
               {sample}
             </button>
           ))}
         </div>
-      </div>
+      </form>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
         <div>
@@ -235,13 +269,11 @@ function AiPage() {
             <Lightbulb className="h-4 w-4" aria-hidden />
             Buka AI summary
           </div>
-          <h2 className="mt-3 font-display text-2xl">{intro}</h2>
+          <h2 className="mt-3 font-display text-2xl text-primary">{intro}</h2>
           <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-            <li>• Lean into local energy: food, music, and cultural depth tend to perform best.</li>
-            <li>
-              • If you want an easy evening, start with live events and then add a dinner stop.
-            </li>
-            <li>• For slow travel, pick nature-led or sunrise-first experiences.</li>
+            {tips.map((tip) => (
+              <li key={tip}>• {tip}</li>
+            ))}
           </ul>
         </aside>
       </div>
