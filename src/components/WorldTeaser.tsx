@@ -1,78 +1,195 @@
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { X } from "lucide-react";
 
-import type { BukaEvent } from "@/lib/buka";
-import { eventPhase } from "@/lib/buka";
-import type { Destination } from "@/lib/destinations";
+import { CoverImage } from "@/components/CoverImage";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { WorldMap, type MapMarker } from "@/components/WorldMap";
+import { eventPhase, formatWhen, type BukaEvent } from "@/lib/buka";
+import { destinationImage, type Destination } from "@/lib/destinations";
 
-/** Lightweight equirectangular "living world" panel — dots placed by lat/lng. */
+type MapExperience = {
+  event: BukaEvent;
+  destination: Destination | undefined;
+  marker: MapMarker;
+};
+
+const STATUS_PRIORITY: Record<MapMarker["kind"], number> = {
+  live: 0,
+  upcoming: 1,
+  recorded: 2,
+  destination: 3,
+};
+
+const STATUS_LABEL: Record<MapMarker["kind"], string> = {
+  live: "Live now",
+  upcoming: "Starting soon",
+  recorded: "Recorded",
+  destination: "Destination",
+};
+
+const STATUS_CLASS: Record<MapMarker["kind"], string> = {
+  live: "bg-live text-live-foreground",
+  upcoming: "bg-primary text-primary-foreground",
+  recorded: "bg-accent text-accent-foreground",
+  destination: "bg-accent text-accent-foreground",
+};
+
 export function WorldTeaser({
   destinations,
   events,
+  loading = false,
+  error = false,
 }: {
   destinations: Destination[];
   events: BukaEvent[];
+  loading?: boolean;
+  error?: boolean;
 }) {
-  const statusFor = (slug: string) => {
-    const evs = events.filter((e) => e.destination_id === slug);
-    if (evs.some((e) => eventPhase(e) === "live")) return "live";
-    if (evs.some((e) => eventPhase(e) === "upcoming")) return "upcoming";
-    if (evs.length) return "replay";
-    return "none";
-  };
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const experiences = useMemo(() => {
+    const byDestination = new Map<string, MapExperience>();
+
+    for (const event of events) {
+      const destination = destinations.find((item) => item.slug === event.destination_id);
+      const lat = event.latitude ?? destination?.latitude;
+      const lng = event.longitude ?? destination?.longitude;
+      if (
+        lat == null ||
+        lng == null ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng) ||
+        lat < -90 ||
+        lat > 90 ||
+        lng < -180 ||
+        lng > 180
+      ) {
+        continue;
+      }
+
+      const phase = eventPhase(event);
+      if (phase === "draft") continue;
+      const kind: MapMarker["kind"] =
+        phase === "live" ? "live" : phase === "upcoming" ? "upcoming" : "recorded";
+      const key = destination?.slug ?? event.id;
+      const candidate: MapExperience = {
+        event,
+        destination,
+        marker: {
+          id: event.id,
+          lat,
+          lng,
+          kind,
+          title: event.title,
+          destinationName: destination?.name ?? event.location,
+        },
+      };
+      const current = byDestination.get(key);
+
+      if (
+        !current ||
+        STATUS_PRIORITY[kind] < STATUS_PRIORITY[current.marker.kind] ||
+        (STATUS_PRIORITY[kind] === STATUS_PRIORITY[current.marker.kind] &&
+          event.scheduled_at < current.event.scheduled_at)
+      ) {
+        byDestination.set(key, candidate);
+      }
+    }
+
+    return [...byDestination.values()];
+  }, [destinations, events]);
+
+  const markers = useMemo(() => experiences.map(({ marker }) => marker), [experiences]);
+  const selected = experiences.find(({ event }) => event.id === selectedId);
+  const onSelect = useCallback((id: string) => setSelectedId(id), []);
 
   return (
-    <div className="relative aspect-[2/1] w-full overflow-hidden rounded-3xl bg-foreground">
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage: "radial-gradient(circle, var(--background) 1px, transparent 1.4px)",
-          backgroundSize: "14px 14px",
-        }}
-        aria-hidden
-      />
-      {destinations
-        .filter((d) => d.latitude != null && d.longitude != null)
-        .map((d) => {
-          const x = ((d.longitude! + 180) / 360) * 100;
-          const y = ((90 - d.latitude!) / 180) * 100;
-          const status = statusFor(d.slug);
-          const color =
-            status === "live" ? "bg-live" : status === "upcoming" ? "bg-primary" : "bg-accent";
-          return (
-            <Link
-              key={d.slug}
-              to="/destinations/$slug"
-              params={{ slug: d.slug }}
-              className="group absolute -translate-x-1/2 -translate-y-1/2"
-              style={{ left: `${x}%`, top: `${y}%` }}
-              aria-label={`${d.name}${status === "live" ? " — live now" : ""}`}
-            >
-              {status === "live" && (
-                <span
-                  className={`absolute inset-0 animate-ping rounded-full ${color} opacity-60`}
-                  aria-hidden
-                />
-              )}
-              <span
-                className={`relative block h-3 w-3 rounded-full ring-2 ring-background ${color}`}
-              />
-              <span className="pointer-events-none absolute left-1/2 top-5 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-background px-2 py-1 text-xs font-medium text-foreground shadow-soft group-hover:block group-focus:block">
-                {d.name}
-              </span>
-            </Link>
-          );
-        })}
-      <div className="absolute bottom-3 left-3 flex flex-wrap gap-3 rounded-full bg-background/90 px-3 py-1.5 text-xs">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-live" /> Live now
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-primary" /> Starting soon
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-accent" /> Recorded
-        </span>
+    <div className="relative h-[360px] w-full overflow-hidden rounded-3xl sm:h-[480px] lg:h-[560px]">
+      <WorldMap markers={markers} onSelect={onSelect} />
+
+      <div className="absolute bottom-3 left-3 z-10 flex flex-wrap gap-2 rounded-2xl border bg-background/95 px-3 py-2 text-xs shadow-soft sm:bottom-4 sm:left-4 sm:gap-3">
+        {(["live", "upcoming", "recorded"] as const).map((status) => (
+          <span key={status} className="inline-flex items-center gap-1.5">
+            <span
+              className={`h-2.5 w-2.5 rounded-full ${
+                status === "live" ? "bg-live" : status === "upcoming" ? "bg-primary" : "bg-accent"
+              }`}
+              aria-hidden
+            />
+            {STATUS_LABEL[status]}
+          </span>
+        ))}
       </div>
+
+      <p className="absolute bottom-4 right-14 z-10 hidden rounded-lg bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-soft sm:block">
+        Drag to pan · use + / − to zoom
+      </p>
+
+      {!loading && (error || experiences.length === 0) && (
+        <div className="absolute left-1/2 top-1/2 z-10 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-card/95 p-5 text-center shadow-soft">
+          {error ? (
+            <>
+              <p className="font-display text-lg">Experiences couldn’t be loaded</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Refresh the page to try loading mapped experiences again.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-display text-lg">No mapped experiences yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                New experiences will appear here when they have a verified destination location.
+              </p>
+              <Button className="mt-4" variant="outline" asChild>
+                <Link to="/destinations">Explore destinations</Link>
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+
+      {selected && (
+        <div className="absolute left-3 right-14 top-3 z-20 flex gap-3 rounded-2xl border bg-card p-3 shadow-lg sm:left-4 sm:right-auto sm:top-4 sm:w-[380px]">
+          <div className="h-20 w-24 shrink-0 overflow-hidden rounded-xl sm:w-28">
+            <CoverImage
+              path={selected.event.cover_image_url}
+              fallback={destinationImage(selected.destination)}
+              alt={selected.event.title}
+              className="h-full w-full"
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <Badge className={`mb-1 ${STATUS_CLASS[selected.marker.kind]}`}>
+              {STATUS_LABEL[selected.marker.kind]}
+            </Badge>
+            <p className="truncate font-medium">
+              {selected.destination?.name ?? selected.event.location}
+            </p>
+            <p className="truncate text-sm text-muted-foreground">{selected.event.title}</p>
+            {selected.marker.kind === "upcoming" && (
+              <p className="truncate text-xs text-muted-foreground">
+                Starts {formatWhen(selected.event.scheduled_at)}
+              </p>
+            )}
+            <Button size="sm" className="mt-2" asChild>
+              <Link to="/events/$eventId" params={{ eventId: selected.event.id }}>
+                View experience
+              </Link>
+            </Button>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            aria-label="Close selected experience"
+            onClick={() => setSelectedId(null)}
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

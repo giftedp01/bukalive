@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Minus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export type MapMarker = {
   id: string;
@@ -6,6 +8,7 @@ export type MapMarker = {
   lng: number;
   kind: "live" | "upcoming" | "recorded" | "destination";
   title: string;
+  destinationName?: string;
 };
 
 declare global {
@@ -61,9 +64,13 @@ export function WorldMap({
           center: { lat: 10, lng: 15 },
           zoom: 2,
           minZoom: 2,
+          maxZoom: 18,
           clickableIcons: false,
+          zoomControl: false,
+          gestureHandling: "greedy",
           streetViewControl: false,
           mapTypeControl: false,
+          fullscreenControl: false,
           styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
         });
         setReady(true);
@@ -78,7 +85,7 @@ export function WorldMap({
       const marker = new window.google.maps.Marker({
         position: { lat: m.lat, lng: m.lng },
         map: map.current,
-        title: m.title,
+        title: [m.destinationName, m.title].filter(Boolean).join(" — "),
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
           scale: m.kind === "destination" ? 6 : 9,
@@ -96,9 +103,37 @@ export function WorldMap({
   return (
     <div className="relative h-full w-full overflow-hidden rounded-3xl border bg-sand">
       <div ref={el} className="h-full w-full" />
+      {!ready && !failed && (
+        <div className="absolute inset-0 grid place-items-center bg-sand p-6 text-center text-sm text-muted-foreground">
+          <div>
+            <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
+            Loading the world map…
+          </div>
+        </div>
+      )}
       {failed && (
         <div className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-muted-foreground">
           The map couldn't load right now. Try refreshing the page.
+        </div>
+      )}
+      {ready && (
+        <div className="absolute right-3 top-3 z-10 flex flex-col gap-1 rounded-xl border bg-background/95 p-1 shadow-soft">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Zoom in"
+            onClick={() => map.current?.setZoom(map.current.getZoom() + 1)}
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Zoom out"
+            onClick={() => map.current?.setZoom(map.current.getZoom() - 1)}
+          >
+            <Minus className="h-4 w-4" aria-hidden />
+          </Button>
         </div>
       )}
     </div>

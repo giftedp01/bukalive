@@ -129,8 +129,12 @@ function Row({
 function Home() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
-  const { data: events = [], isLoading } = useAllEvents();
-  const { data: destinations = [] } = useQuery(destinationsQuery);
+  const { data: events = [], isLoading, isError: eventsError } = useAllEvents();
+  const {
+    data: destinations = [],
+    isLoading: destinationsLoading,
+    isError: destinationsError,
+  } = useQuery(destinationsQuery);
 
   const live = events
     .filter((e) => eventPhase(e) === "live")
@@ -302,9 +306,15 @@ function Home() {
       <section className="mx-auto w-full max-w-6xl px-4 py-10">
         <h2 className="font-display text-2xl sm:text-3xl">Discover the world</h2>
         <p className="mb-6 text-sm text-muted-foreground">
-          Every dot is a destination with live or recorded experiences. Tap one to go there.
+          Explore experiences at their real destinations. Drag to move the map, then select a marker
+          to open an experience.
         </p>
-        <WorldTeaser destinations={destinations} events={events} />
+        <WorldTeaser
+          destinations={destinations}
+          events={events}
+          loading={isLoading || destinationsLoading}
+          error={eventsError || destinationsError}
+        />
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-6">
