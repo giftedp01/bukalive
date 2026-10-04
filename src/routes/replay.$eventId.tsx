@@ -192,7 +192,7 @@ function ReplayPage() {
 
       {!hasReplay ? (
         <div className="mt-8 rounded-2xl bg-muted p-6 text-center text-sm text-muted-foreground">
-          This event has ended, but no replay is available yet.
+          This replay isn’t available yet.
         </div>
       ) : !hasAccess ? (
         <div className="mt-8 rounded-3xl border bg-muted p-8 text-center">

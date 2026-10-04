@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { AdSlot } from "@/components/AdSlot";
 import { Countdown } from "@/components/Countdown";
+import { EventVideo } from "@/components/EventVideo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -416,7 +417,7 @@ function WatchPage() {
     );
   }
 
-  if (!isWatchable(event) && !isHostOfEvent) {
+  if (!isWatchable(event) && !isHostOfEvent && event.status !== "ended") {
     return (
       <Gate title="Not started yet">
         <p>You're in. The stream opens at {formatWhen(event.scheduled_at)}.</p>
@@ -450,11 +451,32 @@ function WatchPage() {
             category={event.category_id ?? event.category}
           />
 
-          <ClientOnly fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
-            <Suspense fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
-              <LivePlayer eventId={event.id} subExperienceId={subExperienceId} />
-            </Suspense>
-          </ClientOnly>
+          {event.status === "ended" ? (
+            event.video_path || event.video_url || event.replay_url ? (
+              <EventVideo
+                {...(event.video_path ? { videoPath: event.video_path } : {})}
+                {...((event.video_url ?? event.replay_url)
+                  ? { videoUrl: event.video_url ?? event.replay_url }
+                  : {})}
+                title={event.title}
+              />
+            ) : (
+              <div className="grid aspect-video place-items-center rounded-3xl border bg-muted px-6 text-center">
+                <div>
+                  <h2 className="font-display text-xl">This replay isn’t available yet.</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Please check back later for the recording.
+                  </p>
+                </div>
+              </div>
+            )
+          ) : (
+            <ClientOnly fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
+              <Suspense fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
+                <LivePlayer eventId={event.id} subExperienceId={subExperienceId} />
+              </Suspense>
+            </ClientOnly>
+          )}
 
           <p className="whitespace-pre-line text-sm text-muted-foreground">{event.description}</p>
           <AdSlot placement="watch-sidebar" />

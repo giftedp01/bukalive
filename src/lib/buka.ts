@@ -82,6 +82,7 @@ export type BukaEvent = {
   longitude?: number | null;
   viewer_count?: number;
   replay_url?: string | null;
+  booking_url?: string | null;
   is_sample?: boolean;
   business?: {
     id: string;

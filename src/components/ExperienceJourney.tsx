@@ -25,6 +25,7 @@ export function ExperienceJourney({ event }: { event: BukaEvent }) {
   const { data: destinations } = useQuery(destinationsQuery);
   const d = destinations?.find((x) => x.slug === event.destination_id);
   const phase = eventPhase(event);
+  const bookingUrl = event.booking_url ?? event.book_url;
 
   const share = async () => {
     const url = window.location.href;
@@ -74,15 +75,11 @@ export function ExperienceJourney({ event }: { event: BukaEvent }) {
       <div className="rounded-3xl bg-sand p-5 text-sand-foreground">
         <p className="font-display text-xl">Want to experience this yourself?</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {event.book_url ? (
+          {bookingUrl && (
             <Button asChild>
-              <a href={event.book_url} target="_blank" rel="noopener noreferrer">
-                <Ticket className="mr-1.5 h-4 w-4" /> Book experience
+              <a href={bookingUrl} target="_blank" rel="noopener noreferrer">
+                <Ticket className="mr-1.5 h-4 w-4" /> Book
               </a>
-            </Button>
-          ) : (
-            <Button disabled title="This provider hasn't connected booking yet">
-              <Ticket className="mr-1.5 h-4 w-4" /> Booking coming soon
             </Button>
           )}
           {d && (
@@ -137,7 +134,7 @@ export function ExperienceJourney({ event }: { event: BukaEvent }) {
               </SheetDescription>
             </SheetHeader>
             <div className="mt-6">
-              <GoTherePanel destinationSlug={d.slug} bookUrl={event.book_url} />
+              <GoTherePanel destinationSlug={d.slug} bookingUrl={bookingUrl} />
             </div>
           </SheetContent>
         </Sheet>

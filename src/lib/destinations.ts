@@ -80,6 +80,7 @@ export type Listing = {
   name: string;
   summary: string;
   url: string | null;
+  link_url: string | null;
   price_from: string | null;
   is_sample: boolean;
 };

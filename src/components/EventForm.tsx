@@ -15,6 +15,7 @@ import { CountrySelector } from "@/components/browse/CountrySelector";
 import { supabase } from "@/integrations/supabase/client";
 import { type BukaEvent } from "@/lib/buka";
 import { useAuth } from "@/lib/auth";
+import { getVideoSource } from "@/lib/video";
 
 function toLocalInput(iso: string) {
   const date = new Date(iso);
@@ -36,6 +37,8 @@ export function EventForm({ event }: { event?: BukaEvent }) {
   const navigate = useNavigate();
   const [title, setTitle] = useState(event?.title ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
+  const [replayUrl, setReplayUrl] = useState(event?.replay_url ?? "");
+  const [bookingUrl, setBookingUrl] = useState(event?.booking_url ?? event?.book_url ?? "");
   const [categoryId, setCategoryId] = useState(event?.category_id ?? undefined);
   const [countryId, setCountryId] = useState(event?.country_id ?? "ZA");
   const [location, setLocation] = useState(event?.location ?? "");
@@ -80,6 +83,22 @@ export function EventForm({ event }: { event?: BukaEvent }) {
       toast.error("Choose a country and category");
       return;
     }
+    const normalizedReplayUrl = replayUrl.trim();
+    if (normalizedReplayUrl && !getVideoSource(normalizedReplayUrl)) {
+      toast.error("Enter a YouTube, Vimeo, MP4, or WebM replay link");
+      return;
+    }
+    const normalizedBookingUrl = bookingUrl.trim();
+    if (normalizedBookingUrl) {
+      try {
+        if (new URL(normalizedBookingUrl).protocol !== "https:") {
+          throw new Error("Booking links must use HTTPS");
+        }
+      } catch {
+        toast.error("Enter a valid HTTPS booking link");
+        return;
+      }
+    }
     setSaving(true);
     try {
       const payload = {
@@ -95,6 +114,8 @@ export function EventForm({ event }: { event?: BukaEvent }) {
         currency: "ZAR",
         event_type: eventType,
         cover_image_url: coverPath,
+        replay_url: normalizedReplayUrl || null,
+        booking_url: normalizedBookingUrl || null,
         is_published: published,
         status: (event?.status === "live" || event?.status === "ended"
           ? event.status
@@ -142,6 +163,34 @@ export function EventForm({ event }: { event?: BukaEvent }) {
           rows={5}
           placeholder="What will viewers see? Who is guiding them?"
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="replay-url">Replay link</Label>
+        <Input
+          id="replay-url"
+          type="url"
+          value={replayUrl}
+          onChange={(e) => setReplayUrl(e.target.value)}
+          placeholder="https://…"
+        />
+        <p className="text-xs text-muted-foreground">
+          Optional. Add a YouTube, Vimeo, MP4, or WebM link for the replay.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="booking-url">Booking link</Label>
+        <Input
+          id="booking-url"
+          type="url"
+          value={bookingUrl}
+          onChange={(e) => setBookingUrl(e.target.value)}
+          placeholder="https://…"
+        />
+        <p className="text-xs text-muted-foreground">
+          Optional. Add a secure link where viewers can book this experience.
+        </p>
       </div>
 
       <div className="space-y-4">

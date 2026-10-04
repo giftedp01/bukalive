@@ -142,7 +142,9 @@ function DestinationPage() {
                 className="flex gap-2 font-medium underline"
                 target="_blank"
                 rel="noopener noreferrer"
-                href={`https://www.google.com/maps/search/?api=1&query=${d.latitude},${d.longitude}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  [d.name, d.city, d.region, countryName(d.country_id)].filter(Boolean).join(", "),
+                )}`}
               >
                 <MapPin className="h-4 w-4 shrink-0" /> Open in maps
               </a>

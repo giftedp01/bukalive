@@ -449,9 +449,11 @@ function EventDetail() {
                 </Button>
               )}
 
-              <p className="text-center text-xs text-muted-foreground">
-                Demo checkout — no card is charged yet.
-              </p>
+              {event.price_cents > 0 && (
+                <p className="text-center text-xs text-muted-foreground">
+                  Demo checkout — no card is charged yet.
+                </p>
+              )}
             </CardContent>
           </Card>
         </aside>

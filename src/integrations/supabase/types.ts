@@ -55,6 +55,7 @@ export type Database = {
       events: {
         Row: {
           book_url: string | null;
+          booking_url: string | null;
           category: Database["public"]["Enums"]["event_category"];
           category_id: string | null;
           country_id: string | null;
@@ -72,6 +73,7 @@ export type Database = {
           location: string;
           price_cents: number;
           province_id: string | null;
+          replay_url: string | null;
           scheduled_at: string;
           status: Database["public"]["Enums"]["event_status"];
           stay_url: string | null;
@@ -85,6 +87,7 @@ export type Database = {
         };
         Insert: {
           book_url?: string | null;
+          booking_url?: string | null;
           category?: Database["public"]["Enums"]["event_category"];
           category_id?: string | null;
           country_id?: string | null;
@@ -102,6 +105,7 @@ export type Database = {
           location?: string;
           price_cents?: number;
           province_id?: string | null;
+          replay_url?: string | null;
           scheduled_at: string;
           status?: Database["public"]["Enums"]["event_status"];
           stay_url?: string | null;
@@ -115,6 +119,7 @@ export type Database = {
         };
         Update: {
           book_url?: string | null;
+          booking_url?: string | null;
           category?: Database["public"]["Enums"]["event_category"];
           category_id?: string | null;
           country_id?: string | null;
@@ -132,6 +137,7 @@ export type Database = {
           location?: string;
           price_cents?: number;
           province_id?: string | null;
+          replay_url?: string | null;
           scheduled_at?: string;
           status?: Database["public"]["Enums"]["event_status"];
           stay_url?: string | null;
