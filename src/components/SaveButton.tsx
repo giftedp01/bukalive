@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 
 type ItemType = "experience" | "destination" | "business";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSaved(itemType: ItemType, itemId: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();

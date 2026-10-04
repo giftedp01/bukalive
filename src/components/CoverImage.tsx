@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
  * Cover images live in the private `event-covers` bucket, so a short-lived
  * signed URL is resolved on demand. Absolute URLs are used as-is.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCoverUrl(path: string | null | undefined) {
   return useQuery({
     queryKey: ["cover", path],
