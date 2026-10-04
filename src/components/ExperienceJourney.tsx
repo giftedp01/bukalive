@@ -19,7 +19,7 @@ import { countryName } from "@/data/countries";
 import { categoryLabel, eventPhase, type BukaEvent } from "@/lib/buka";
 import { destinationsQuery, type VerificationStatus } from "@/lib/destinations";
 
-/** Watch → Discover → Book → Go there. Sits on every experience page. */
+/** Continue from watching and interacting to discovering, booking, and visiting in person. */
 export function ExperienceJourney({ event }: { event: BukaEvent }) {
   const [open, setOpen] = useState(false);
   const { data: destinations } = useQuery(destinationsQuery);

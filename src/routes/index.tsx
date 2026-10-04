@@ -215,8 +215,8 @@ function Home() {
       </section>
 
       <section className="border-b bg-sand/40">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-4 px-4 py-6 text-center text-sm sm:grid-cols-4">
-          {["Watch", "Interact", "Discover", "Book & go there"].map((step, i) => (
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-4 px-4 py-6 text-center text-sm sm:grid-cols-3 lg:grid-cols-5">
+          {["Watch", "Interact", "Discover", "Book", "Go there"].map((step, i) => (
             <div key={step}>
               <span className="font-display text-2xl text-primary">0{i + 1}</span>
               <p className="font-medium">{step}</p>

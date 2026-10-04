@@ -11,6 +11,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { SubExperienceList } from "@/components/SubExperienceList";
 import { Countdown } from "@/components/Countdown";
 import { CoverImage } from "@/components/CoverImage";
+import { ExperienceJourney } from "@/components/ExperienceJourney";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -263,6 +264,8 @@ function EventDetail() {
             eventTitle={event.title}
             category={event.category_id ?? event.category}
           />
+
+          <ExperienceJourney event={event} />
 
           {event.subExperiences && event.subExperiences.length > 0 && (
             <SubExperienceList subExperiences={event.subExperiences} eventId={event.id} />
