@@ -16,7 +16,8 @@ export const purchaseAccess = createServerFn({ method: "POST" })
       .select("id, price_cents, currency, is_published, is_flagged")
       .eq("id", data.eventId)
       .maybeSingle();
-    if (error || !event || !event.is_published || event.is_flagged) {
+    if (error) throw error;
+    if (!event || !event.is_published || event.is_flagged) {
       throw new Error("This event is not available");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
