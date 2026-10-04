@@ -42,6 +42,7 @@ function MapPage() {
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
 
+  const hasMapsKey = Boolean(import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"]);
   const { data: destinations } = useQuery(destinationsQuery);
   const { data: events } = useQuery({
     queryKey: ["map-events"],
@@ -189,7 +190,54 @@ function MapPage() {
           </div>
         )}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">{markers.length} experiences on the map</p>
+
+      {!hasMapsKey && markers.length > 0 && (
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {markers.slice(0, 6).map((marker) => {
+            const item = filtered.find((x) => x.e.id === marker.id);
+            if (!item) return null;
+            return (
+              <div key={marker.id} className="rounded-2xl border bg-card p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        marker.kind === "live"
+                          ? "#e5484d"
+                          : marker.kind === "upcoming"
+                            ? "#f5b301"
+                            : "#2f7de1",
+                    }}
+                  />
+                  <span className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                    {marker.kind === "live"
+                      ? "Live now"
+                      : marker.kind === "upcoming"
+                        ? "Starting soon"
+                        : "Replay"}
+                  </span>
+                </div>
+                <p className="font-medium">{item.e.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {item.d?.name ?? item.e.location} ·{" "}
+                  {countryName(item.e.country_id ?? item.d?.country_id)}
+                </p>
+                <Button size="sm" className="mt-3" asChild>
+                  <Link to="/events/$eventId" params={{ eventId: item.e.id }}>
+                    Open experience
+                  </Link>
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="mt-3 text-xs text-muted-foreground">
+        {markers.length} experiences on the map
+        {!hasMapsKey ? " (preview list shown while the map key is offline)" : ""}
+      </p>
     </div>
   );
 }

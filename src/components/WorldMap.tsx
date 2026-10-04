@@ -18,10 +18,11 @@ declare global {
 let loader: Promise<void> | null = null;
 function loadMaps(): Promise<void> {
   if (window.google?.maps?.Map) return Promise.resolve();
+  const key = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"];
+  if (!key) return Promise.reject(new Error("Google Maps key not configured"));
   if (loader) return loader;
   loader = new Promise((resolve, reject) => {
     window.__bukaMapsReady = () => resolve();
-    const key = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY"];
     const channel = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID"];
     const s = document.createElement("script");
     s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&loading=async&callback=__bukaMapsReady&channel=${channel}`;
