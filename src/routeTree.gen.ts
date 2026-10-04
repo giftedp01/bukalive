@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AiRouteImport } from './routes/ai'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as HostRouteImport } from './routes/host'
@@ -35,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiRoute = AiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -116,6 +122,7 @@ const HostEventsNewRoute = HostEventsNewRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/ai': typeof AiRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
@@ -135,6 +142,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/ai': typeof AiRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/map': typeof MapRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/ai': typeof AiRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/ai'
     | '/auth'
     | '/browse'
     | '/host'
@@ -194,6 +204,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/ai'
     | '/auth'
     | '/browse'
     | '/map'
@@ -212,6 +223,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/ai'
     | '/auth'
     | '/browse'
     | '/host'
@@ -232,6 +244,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AiRoute: typeof AiRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   HostRoute: typeof HostRouteWithChildren
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai': {
+      id: '/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -388,6 +408,7 @@ const HostRouteWithChildren = HostRoute._addFileChildren(HostRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AiRoute: AiRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   HostRoute: HostRouteWithChildren,

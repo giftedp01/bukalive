@@ -18,6 +18,9 @@ export function Footer() {
           <Link to="/browse" className="block text-muted-foreground hover:text-foreground">
             Browse events
           </Link>
+          <Link to="/ai" className="block text-muted-foreground hover:text-foreground">
+            Ask Buka AI
+          </Link>
           <Link to="/tickets" className="block text-muted-foreground hover:text-foreground">
             My BukaLive
           </Link>

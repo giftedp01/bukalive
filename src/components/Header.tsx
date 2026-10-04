@@ -40,6 +40,9 @@ export function Header() {
           <Button variant="ghost" asChild>
             <Link to="/destinations">Destinations</Link>
           </Button>
+          <Button variant="ghost" asChild>
+            <Link to="/ai">Ask Buka AI</Link>
+          </Button>
           {user && (
             <Button variant="ghost" asChild>
               <Link to="/tickets">My BukaLive</Link>
