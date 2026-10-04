@@ -465,7 +465,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          full_name: string | null
+          host_bio: string | null
+          host_status: Database["public"]["Enums"]["host_status"] | null
+          id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          full_name?: string | null
+          host_bio?: string | null
+          host_status?: Database["public"]["Enums"]["host_status"] | null
+          id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          full_name?: string | null
+          host_bio?: string | null
+          host_status?: Database["public"]["Enums"]["host_status"] | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_access: {
