@@ -157,18 +157,15 @@ function Home() {
         />
         <div className="absolute inset-0 bg-scrim" aria-hidden />
         <div className="relative mx-auto w-full max-w-6xl px-4 pb-16 pt-20 sm:pb-24 sm:pt-32">
-          {live.length > 0 && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-background/90 px-3 py-1 text-xs font-medium">
-              <span className="live-dot" aria-hidden /> {live.length} experiences live around the
-              world
-            </span>
-          )}
+          <span className="inline-flex items-center gap-2 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+            <span className="live-dot" aria-hidden /> Only drone &amp; 360° livestreams
+          </span>
           <h1 className="mt-5 max-w-3xl font-display text-5xl leading-[1.05] text-primary-foreground sm:text-7xl">
-            Explore the world live.
+            Feel like you’re there.
           </h1>
           <p className="mt-5 max-w-xl text-base text-primary-foreground/90 sm:text-lg">
-            Discover destinations, experiences and events as they happen. Watch live, interact with
-            people on the ground, discover what is nearby and turn inspiration into your next trip.
+            Step inside the moment with immersive drone and 360° views. Meet the people on the
+            ground, discover what’s nearby, and turn “wish I was there” into your next trip.
           </p>
 
           <form
