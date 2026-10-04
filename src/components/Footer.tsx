@@ -19,7 +19,7 @@ export function Footer() {
             Browse events
           </Link>
           <Link to="/tickets" className="block text-muted-foreground hover:text-foreground">
-            My tickets
+            My BukaLive
           </Link>
         </div>
         <div className="space-y-2 text-sm">

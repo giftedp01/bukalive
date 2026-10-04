@@ -92,6 +92,68 @@ function EventDetail() {
     },
   });
 
+  const { data: recommendations = [] } = useQuery({
+    queryKey: [
+      "recommendations",
+      eventId,
+      event?.destination_id,
+      event?.category,
+      event?.category_id,
+    ],
+    enabled: !!event,
+    queryFn: async () => {
+      if (!event) return [] as BukaEvent[];
+
+      const seen = new Set<string>();
+      const list: BukaEvent[] = [];
+
+      if (event.destination_id) {
+        const { data: destinationMatches, error: destinationError } = await supabase
+          .from("events")
+          .select("*")
+          .eq("is_published", true)
+          .eq("is_flagged", false)
+          .eq("destination_id", event.destination_id)
+          .neq("id", eventId)
+          .order("scheduled_at", { ascending: false })
+          .limit(6);
+
+        if (destinationError) throw destinationError;
+
+        for (const item of destinationMatches ?? []) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            list.push(item as BukaEvent);
+          }
+        }
+      }
+
+      const categoryQuery = event.category_id ?? event.category;
+      if (categoryQuery) {
+        const { data: categoryMatches, error: categoryError } = await supabase
+          .from("events")
+          .select("*")
+          .eq("is_published", true)
+          .eq("is_flagged", false)
+          .neq("id", eventId)
+          .or(`category.eq.${categoryQuery},category_id.eq.${categoryQuery}`)
+          .order("scheduled_at", { ascending: false })
+          .limit(6);
+
+        if (categoryError) throw categoryError;
+
+        for (const item of categoryMatches ?? []) {
+          if (!seen.has(item.id)) {
+            seen.add(item.id);
+            list.push(item as BukaEvent);
+          }
+        }
+      }
+
+      return list.slice(0, 4);
+    },
+  });
+
   const buy = useMutation({
     mutationFn: async () => {
       if (!user || !event) throw new Error("Please sign in first");
@@ -205,6 +267,43 @@ function EventDetail() {
                 </div>
               </CardContent>
             </Card>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl">More like this</h2>
+            {recommendations.length === 0 ? (
+              <p className="mt-2 rounded-2xl bg-muted px-4 py-3 text-sm text-muted-foreground">
+                No similar experiences are live right now. Check back soon for more from this
+                destination or category.
+              </p>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {recommendations.map((recommendation) => (
+                  <Link
+                    key={recommendation.id}
+                    to="/events/$eventId"
+                    params={{ eventId: recommendation.id }}
+                    className="block rounded-2xl border bg-card p-3 transition-colors hover:border-primary/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <CoverImage
+                        path={recommendation.cover_image_url}
+                        alt={recommendation.title}
+                        className="h-16 w-20 rounded-xl"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{recommendation.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {recommendation.location || "Online"}
+                          {" · "}
+                          {formatWhen(recommendation.scheduled_at)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </section>
 
           <AdSlot placement="event-detail" />

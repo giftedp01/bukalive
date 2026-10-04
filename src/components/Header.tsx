@@ -42,7 +42,7 @@ export function Header() {
           </Button>
           {user && (
             <Button variant="ghost" asChild>
-              <Link to="/tickets">My tickets</Link>
+              <Link to="/tickets">My BukaLive</Link>
             </Button>
           )}
         </nav>
@@ -73,7 +73,7 @@ export function Header() {
                 <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate({ to: "/tickets" })}>
-                  <Ticket className="mr-2 h-4 w-4" aria-hidden /> My tickets
+                  <Ticket className="mr-2 h-4 w-4" aria-hidden /> My BukaLive
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => navigate({ to: isHost ? "/host" : "/host/apply" })}
