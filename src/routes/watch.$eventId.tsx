@@ -81,6 +81,24 @@ function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
     },
   });
 
+  const { data: blockedUserIds = [] } = useQuery({
+    queryKey: ["blocked-user-ids", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return [] as string[];
+      const { data, error } = await supabase
+        .from("blocks")
+        .select("blocked_id")
+        .eq("blocker_id", user.id);
+      if (error) throw error;
+      return (data ?? []).map((row) => row.blocked_id as string);
+    },
+  });
+
+  const visibleMessages = (messages ?? []).filter(
+    (message) => !blockedUserIds.includes(message.user_id),
+  );
+
   useEffect(() => {
     const channel = supabase
       .channel(`chat-${eventId}`)
@@ -198,10 +216,10 @@ function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
         <p className="text-xs text-muted-foreground">Say hello to other viewers</p>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
-        {(messages ?? []).length === 0 ? (
+        {visibleMessages.length === 0 ? (
           <p className="text-sm text-muted-foreground">No messages yet — start the conversation.</p>
         ) : (
-          (messages ?? []).map((message) => (
+          visibleMessages.map((message) => (
             <div key={message.id} className="rounded-xl border p-3 text-sm">
               <div className="flex items-start justify-between gap-2">
                 <div>

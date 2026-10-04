@@ -4,6 +4,8 @@ import { CalendarClock, Clock, MapPin, Radio, Ticket } from "lucide-react";
 import { toast } from "sonner";
 
 import { AdSlot } from "@/components/AdSlot";
+import { BlockButton } from "@/components/BlockButton";
+import { ReportButton } from "@/components/ReportButton";
 import { SubExperienceList } from "@/components/SubExperienceList";
 import { Countdown } from "@/components/Countdown";
 import { CoverImage } from "@/components/CoverImage";
@@ -255,15 +257,21 @@ function EventDetail() {
           <section>
             <h2 className="font-display text-xl">Your host</h2>
             <Card className="mt-2">
-              <CardContent className="flex items-start gap-4 pt-6">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sunset text-primary-foreground">
-                  <Radio className="h-5 w-5" aria-hidden />
+              <CardContent className="space-y-4 pt-6">
+                <div className="flex items-start gap-4">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-sunset text-primary-foreground">
+                    <Radio className="h-5 w-5" aria-hidden />
+                  </div>
+                  <div>
+                    <p className="font-medium">{host?.full_name || "BukaLive host"}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {host?.host_bio || host?.bio || "Verified BukaLive host."}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{host?.full_name || "BukaLive host"}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {host?.host_bio || host?.bio || "Verified BukaLive host."}
-                  </p>
+                <div className="flex flex-wrap gap-2">
+                  <ReportButton itemType="experience" itemId={event.id} label="Report event" />
+                  <BlockButton blockedId={event.host_id} label="Block host" />
                 </div>
               </CardContent>
             </Card>

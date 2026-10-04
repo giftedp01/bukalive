@@ -41,6 +41,18 @@ type ProfileRow = {
   host_applied_at: string | null;
 };
 
+type ReportRow = {
+  id: string;
+  reporter_id: string;
+  item_type: "experience" | "chat_message" | "user" | "business";
+  item_id: string;
+  reason: string;
+  details: string;
+  status: "open" | "reviewed" | "actioned" | "dismissed";
+  created_at: string;
+  reporter: { full_name: string | null; email: string | null } | null;
+};
+
 function AdminPage() {
   const { isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
@@ -68,6 +80,21 @@ function AdminPage() {
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as BukaEvent[];
+    },
+  });
+
+  const { data: reports, isLoading: reportsLoading } = useQuery({
+    queryKey: ["admin-reports"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reports")
+        .select(
+          "id, reporter_id, item_type, item_id, reason, details, status, created_at, reporter:profiles(full_name, email)",
+        )
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as ReportRow[];
     },
   });
 
@@ -108,6 +135,16 @@ function AdminPage() {
     }
     toast.success("Event removed");
     queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+  };
+
+  const updateReport = async (report: ReportRow, status: ReportRow["status"]) => {
+    const { error } = await supabase.from("reports").update({ status }).eq("id", report.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`Report marked as ${status}`);
+    queryClient.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
   if (loading) {
@@ -164,6 +201,7 @@ function AdminPage() {
           <TabsTrigger value="hosts">Host applications</TabsTrigger>
           <TabsTrigger value="people">People</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hosts" className="mt-6 space-y-3">
@@ -263,6 +301,63 @@ function AdminPage() {
                     <Trash2 className="mr-2 h-4 w-4" aria-hidden /> Remove
                   </Button>
                 </div>
+              </div>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="reports" className="mt-6 space-y-3">
+          {reportsLoading ? (
+            <Skeleton className="h-24 rounded-2xl" />
+          ) : !reports || reports.length === 0 ? (
+            <p className="rounded-2xl bg-muted px-6 py-10 text-center text-sm text-muted-foreground">
+              No reports submitted yet.
+            </p>
+          ) : (
+            reports.map((report) => (
+              <div key={report.id} className="rounded-2xl border bg-card p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="font-medium">
+                      {report.reason} · {report.item_type}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Reported by{" "}
+                      {report.reporter?.full_name || report.reporter?.email || "unknown"} ·{" "}
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Badge variant={report.status === "open" ? "destructive" : "secondary"}>
+                    {report.status}
+                  </Badge>
+                </div>
+
+                <p className="mt-3 text-sm text-muted-foreground">Item: {report.item_id}</p>
+                {report.details && (
+                  <p className="mt-2 whitespace-pre-line text-sm">{report.details}</p>
+                )}
+
+                {report.status !== "dismissed" && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => updateReport(report, "reviewed")}>
+                      Mark reviewed
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateReport(report, "dismissed")}
+                    >
+                      Dismiss
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => updateReport(report, "actioned")}
+                    >
+                      Actioned
+                    </Button>
+                  </div>
+                )}
               </div>
             ))
           )}
