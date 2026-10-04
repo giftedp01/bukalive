@@ -1,13 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Check, Flag, Trash2, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { categoryLabel, formatPrice, formatWhen, type BukaEvent } from "@/lib/buka";
@@ -60,7 +64,11 @@ type LivestreamRequestRow = {
   description: string;
   format: "drone" | "360" | "either";
   preferred_date: string | null;
-  status: "new" | "reviewing" | "scheduled" | "closed";
+  requested_budget_cents: number;
+  approved_budget_cents: number | null;
+  rejection_reason: string | null;
+  payment_status: "pending" | "paid";
+  status: "new" | "reviewing" | "approved" | "rejected" | "scheduled" | "closed" | "canceled";
   created_at: string;
   requester: { full_name: string | null; email: string | null } | null;
 };
@@ -68,6 +76,8 @@ type LivestreamRequestRow = {
 function AdminPage() {
   const { isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
+  const [approvedBudgets, setApprovedBudgets] = useState<Record<string, string>>({});
+  const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({});
 
   const { data: profiles, isLoading: profilesLoading } = useQuery({
     queryKey: ["admin-profiles"],
@@ -174,8 +184,12 @@ function AdminPage() {
 
   const updateLivestreamRequest = async (
     request: LivestreamRequestRow,
-    status: LivestreamRequestRow["status"],
+    status: "new" | "reviewing" | "scheduled" | "closed",
   ) => {
+    if (status === "scheduled" && request.payment_status !== "paid") {
+      toast.error("The requester must pay the approved budget before scheduling");
+      return;
+    }
     const { error } = await supabase
       .from("livestream_requests")
       .update({ status })
@@ -185,6 +199,53 @@ function AdminPage() {
       return;
     }
     toast.success(`Livestream request marked ${status}`);
+    queryClient.invalidateQueries({ queryKey: ["admin-livestream-requests"] });
+  };
+
+  const approveLivestreamRequest = async (request: LivestreamRequestRow) => {
+    const budget = Number(
+      approvedBudgets[request.id] ??
+        ((request.approved_budget_cents ?? request.requested_budget_cents) / 100).toFixed(2),
+    );
+    const approvedBudgetCents = Math.round(budget * 100);
+    if (!Number.isSafeInteger(approvedBudgetCents) || approvedBudgetCents < 1) {
+      toast.error("Enter an approved budget greater than zero");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("livestream_requests")
+      .update({
+        status: "approved",
+        approved_budget_cents: approvedBudgetCents,
+        rejection_reason: null,
+        payment_status: "pending",
+        paid_at: null,
+      })
+      .eq("id", request.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Livestream request approved");
+    queryClient.invalidateQueries({ queryKey: ["admin-livestream-requests"] });
+  };
+
+  const rejectLivestreamRequest = async (request: LivestreamRequestRow) => {
+    const reason = (rejectionReasons[request.id] ?? "").trim();
+    if (!reason) {
+      toast.error("Add a reason before rejecting this request");
+      return;
+    }
+    const { error } = await supabase
+      .from("livestream_requests")
+      .update({ status: "rejected", rejection_reason: reason })
+      .eq("id", request.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Livestream request rejected with feedback");
     queryClient.invalidateQueries({ queryKey: ["admin-livestream-requests"] });
   };
 
@@ -363,7 +424,15 @@ function AdminPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-display text-lg">{request.location}</p>
-                      <Badge variant={request.status === "new" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          request.status === "rejected"
+                            ? "destructive"
+                            : request.status === "new"
+                              ? "default"
+                              : "secondary"
+                        }
+                      >
                         {request.status}
                       </Badge>
                       <Badge variant="outline">
@@ -381,27 +450,114 @@ function AdminPage() {
                       {request.preferred_date &&
                         ` · Preferred date ${new Date(`${request.preferred_date}T00:00:00`).toLocaleDateString()}`}
                     </p>
+                    <p className="mt-1 text-sm">
+                      Proposed budget: {formatPrice(request.requested_budget_cents)}
+                      {request.approved_budget_cents !== null &&
+                        ` · Approved budget: ${formatPrice(request.approved_budget_cents)}`}
+                      {request.payment_status === "paid" && " · Paid"}
+                    </p>
                   </div>
-                  <select
-                    aria-label={`Update request status for ${request.location}`}
-                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                    value={request.status}
-                    onChange={(event) =>
-                      void updateLivestreamRequest(
-                        request,
-                        event.target.value as LivestreamRequestRow["status"],
-                      )
-                    }
-                  >
-                    <option value="new">New</option>
-                    <option value="reviewing">Reviewing</option>
-                    <option value="scheduled">Scheduled</option>
-                    <option value="closed">Closed</option>
-                  </select>
+                  {["new", "reviewing"].includes(request.status) && (
+                    <select
+                      aria-label={`Update request status for ${request.location}`}
+                      className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                      value={request.status}
+                      onChange={(event) =>
+                        void updateLivestreamRequest(
+                          request,
+                          event.target.value as "new" | "reviewing",
+                        )
+                      }
+                    >
+                      <option value="new">New</option>
+                      <option value="reviewing">Reviewing</option>
+                    </select>
+                  )}
+                  {["approved", "scheduled"].includes(request.status) && (
+                    <select
+                      aria-label={`Update request status for ${request.location}`}
+                      className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                      value={request.status}
+                      onChange={(event) =>
+                        void updateLivestreamRequest(
+                          request,
+                          event.target.value as "scheduled" | "closed",
+                        )
+                      }
+                    >
+                      {request.status === "approved" && <option value="approved">Approved</option>}
+                      {request.status === "scheduled" && (
+                        <option value="scheduled">Scheduled</option>
+                      )}
+                      {request.status === "approved" && (
+                        <option value="scheduled">Scheduled</option>
+                      )}
+                      <option value="closed">Closed</option>
+                    </select>
+                  )}
                 </div>
                 <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
                   {request.description}
                 </p>
+                {request.rejection_reason && (
+                  <p className="mt-3 rounded-lg bg-destructive/5 p-3 text-sm">
+                    <span className="font-medium">Rejection reason: </span>
+                    {request.rejection_reason}
+                  </p>
+                )}
+                {["new", "reviewing"].includes(request.status) && (
+                  <div className="mt-4 grid gap-4 border-t pt-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor={`approved-budget-${request.id}`}>Agreed budget (ZAR)</Label>
+                      <Input
+                        id={`approved-budget-${request.id}`}
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={
+                          approvedBudgets[request.id] ??
+                          (
+                            (request.approved_budget_cents ?? request.requested_budget_cents) / 100
+                          ).toFixed(2)
+                        }
+                        onChange={(event) =>
+                          setApprovedBudgets((current) => ({
+                            ...current,
+                            [request.id]: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`rejection-reason-${request.id}`}>Reason if rejecting</Label>
+                      <Textarea
+                        id={`rejection-reason-${request.id}`}
+                        value={rejectionReasons[request.id] ?? ""}
+                        onChange={(event) =>
+                          setRejectionReasons((current) => ({
+                            ...current,
+                            [request.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="Explain why the request cannot be approved"
+                        maxLength={1000}
+                        rows={2}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:col-span-2">
+                      <Button size="sm" onClick={() => void approveLivestreamRequest(request)}>
+                        <Check className="mr-2 h-4 w-4" aria-hidden /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => void rejectLivestreamRequest(request)}
+                      >
+                        <X className="mr-2 h-4 w-4" aria-hidden /> Reject with reason
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

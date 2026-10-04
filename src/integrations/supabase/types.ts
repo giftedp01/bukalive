@@ -186,33 +186,48 @@ export type Database = {
       };
       livestream_requests: {
         Row: {
+          approved_budget_cents: number | null;
           created_at: string;
           description: string;
           format: string;
           id: string;
           location: string;
+          paid_at: string | null;
+          payment_status: string;
           preferred_date: string | null;
+          rejection_reason: string | null;
           requester_id: string;
+          requested_budget_cents: number;
           status: string;
         };
         Insert: {
+          approved_budget_cents?: number | null;
           created_at?: string;
           description: string;
           format: string;
           id?: string;
           location: string;
+          paid_at?: string | null;
+          payment_status?: string;
           preferred_date?: string | null;
+          rejection_reason?: string | null;
           requester_id: string;
+          requested_budget_cents?: number;
           status?: string;
         };
         Update: {
+          approved_budget_cents?: number | null;
           created_at?: string;
           description?: string;
           format?: string;
           id?: string;
           location?: string;
+          paid_at?: string | null;
+          payment_status?: string;
           preferred_date?: string | null;
+          rejection_reason?: string | null;
           requester_id?: string;
+          requested_budget_cents?: number;
           status?: string;
         };
         Relationships: [

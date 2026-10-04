@@ -1,15 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Radio, Send } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { payLivestreamRequest } from "@/lib/livestream.functions";
+import { formatPrice } from "@/lib/buka";
 
 export const Route = createFileRoute("/request-livestream")({
   head: () => ({
@@ -25,35 +30,139 @@ export const Route = createFileRoute("/request-livestream")({
   component: RequestLivestreamPage,
 });
 
+type LivestreamRequest = {
+  id: string;
+  location: string;
+  description: string;
+  format: "drone" | "360" | "either";
+  preferred_date: string | null;
+  requested_budget_cents: number;
+  approved_budget_cents: number | null;
+  rejection_reason: string | null;
+  payment_status: "pending" | "paid";
+  status: "new" | "reviewing" | "approved" | "rejected" | "scheduled" | "closed" | "canceled";
+  created_at: string;
+};
+
 function RequestLivestreamPage() {
   const { user, loading } = useAuth();
+  const queryClient = useQueryClient();
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [format, setFormat] = useState<"drone" | "360" | "either">("either");
   const [preferredDate, setPreferredDate] = useState("");
+  const [budget, setBudget] = useState("");
+  const [editingRequest, setEditingRequest] = useState<LivestreamRequest | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [payingRequestId, setPayingRequestId] = useState<string | null>(null);
+
+  const {
+    data: requests = [],
+    isLoading: requestsLoading,
+    isError: requestsError,
+  } = useQuery({
+    queryKey: ["my-livestream-requests", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("livestream_requests")
+        .select(
+          "id, location, description, format, preferred_date, requested_budget_cents, approved_budget_cents, rejection_reason, payment_status, status, created_at",
+        )
+        .eq("requester_id", user!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as LivestreamRequest[];
+    },
+  });
+
+  const resetForm = () => {
+    setLocation("");
+    setDescription("");
+    setFormat("either");
+    setPreferredDate("");
+    setBudget("");
+    setEditingRequest(null);
+  };
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user) return;
 
+    const budgetCents = Math.round(Number(budget) * 100);
+    if (!Number.isSafeInteger(budgetCents) || budgetCents < 1) {
+      toast.error("Enter a budget greater than zero");
+      return;
+    }
+
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("livestream_requests").insert({
-        requester_id: user.id,
+      const requestDetails = {
         location: location.trim(),
         description: description.trim(),
         format,
         preferred_date: preferredDate || null,
-      });
-      if (error) throw error;
-      setSubmitted(true);
-      toast.success("Livestream request sent");
+        requested_budget_cents: budgetCents,
+      };
+
+      const result = editingRequest
+        ? await supabase
+            .from("livestream_requests")
+            .update({
+              ...requestDetails,
+              ...(editingRequest.status === "rejected" ? { status: "new" } : {}),
+            })
+            .eq("id", editingRequest.id)
+        : await supabase.from("livestream_requests").insert({
+            requester_id: user.id,
+            ...requestDetails,
+          });
+      if (result.error) throw result.error;
+
+      toast.success(editingRequest ? "Livestream request updated" : "Livestream request sent");
+      resetForm();
+      await queryClient.invalidateQueries({ queryKey: ["my-livestream-requests", user.id] });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not send your request");
+      toast.error(error instanceof Error ? error.message : "Could not save your request");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const editRequest = (request: LivestreamRequest) => {
+    setEditingRequest(request);
+    setLocation(request.location);
+    setDescription(request.description);
+    setFormat(request.format);
+    setPreferredDate(request.preferred_date ?? "");
+    setBudget((request.requested_budget_cents / 100).toFixed(2));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelRequest = async (request: LivestreamRequest) => {
+    if (!window.confirm("Cancel this livestream request?")) return;
+    const { error } = await supabase
+      .from("livestream_requests")
+      .update({ status: "canceled" })
+      .eq("id", request.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Livestream request canceled");
+    await queryClient.invalidateQueries({ queryKey: ["my-livestream-requests", user?.id] });
+  };
+
+  const payForRequest = async (request: LivestreamRequest) => {
+    setPayingRequestId(request.id);
+    try {
+      await payLivestreamRequest({ data: { requestId: request.id } });
+      toast.success("Demo payment recorded");
+      await queryClient.invalidateQueries({ queryKey: ["my-livestream-requests", user?.id] });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not complete payment");
+    } finally {
+      setPayingRequestId(null);
     }
   };
 
@@ -74,28 +183,16 @@ function RequestLivestreamPage() {
     );
   }
 
-  if (submitted) {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-20 text-center">
-        <Radio className="mx-auto h-10 w-10 text-primary" aria-hidden />
-        <h1 className="mt-4 font-display text-3xl">Request received!</h1>
-        <p className="mt-2 text-muted-foreground">
-          We’ll use your idea to help bring more of the world to BukaLive.
-        </p>
-        <Button className="mt-6" asChild>
-          <Link to="/browse">Explore live experiences</Link>
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
+    <div className="mx-auto max-w-2xl space-y-8 px-4 py-12">
       <Card className="shadow-soft">
         <CardHeader>
-          <CardTitle className="font-display text-3xl">Ask for a Livestream</CardTitle>
+          <CardTitle className="font-display text-3xl">
+            {editingRequest ? "Edit livestream request" : "Ask for a Livestream"}
+          </CardTitle>
           <CardDescription>
-            Pick a place you’d love to see and tell us what should come alive on camera.
+            Pick a place you’d love to see, describe the experience, and set your budget in ZAR.
+            We’ll confirm the final price before you pay.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -152,13 +249,148 @@ function RequestLivestreamPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={submitting}>
-              <Send className="mr-2 h-4 w-4" aria-hidden />
-              {submitting ? "Sending request…" : "Send livestream request"}
-            </Button>
+            <div className="space-y-2">
+              <Label htmlFor="request-budget">Your budget (ZAR)</Label>
+              <Input
+                id="request-budget"
+                type="number"
+                inputMode="decimal"
+                min="0.01"
+                step="0.01"
+                value={budget}
+                onChange={(event) => setBudget(event.target.value)}
+                placeholder="e.g. 500.00"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                This is your proposed budget. We’ll show you the approved amount before any payment.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button type="submit" className="flex-1" disabled={submitting}>
+                <Send className="mr-2 h-4 w-4" aria-hidden />
+                {submitting
+                  ? "Saving request…"
+                  : editingRequest
+                    ? "Save changes"
+                    : "Send livestream request"}
+              </Button>
+              {editingRequest && (
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Stop editing
+                </Button>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
+
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-display text-2xl">Your livestream requests</h2>
+          <p className="text-sm text-muted-foreground">
+            Track decisions, update eligible requests, and pay after approval.
+          </p>
+        </div>
+        {requestsLoading ? (
+          <Skeleton className="h-28 rounded-2xl" />
+        ) : requestsError ? (
+          <p className="rounded-xl border border-destructive/30 p-4 text-sm text-destructive">
+            Could not load your livestream requests. Please refresh and try again.
+          </p>
+        ) : requests.length === 0 ? (
+          <p className="rounded-xl border p-6 text-center text-sm text-muted-foreground">
+            You haven’t sent a livestream request yet.
+          </p>
+        ) : (
+          requests.map((request) => {
+            const canEdit = request.status === "new" || request.status === "rejected";
+            const canCancel =
+              request.payment_status === "pending" &&
+              ["new", "reviewing", "approved", "rejected"].includes(request.status);
+
+            return (
+              <Card key={request.id}>
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-display text-lg">{request.location}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Sent {new Date(request.created_at).toLocaleDateString()} · Requested budget{" "}
+                        {formatPrice(request.requested_budget_cents)}
+                      </p>
+                    </div>
+                    <Badge variant={request.status === "rejected" ? "destructive" : "secondary"}>
+                      {request.status}
+                    </Badge>
+                  </div>
+                  <p className="whitespace-pre-line text-sm text-muted-foreground">
+                    {request.description}
+                  </p>
+
+                  {request.status === "rejected" && request.rejection_reason && (
+                    <p className="rounded-lg bg-destructive/5 p-3 text-sm">
+                      <span className="font-medium">Why it was declined: </span>
+                      {request.rejection_reason}
+                    </p>
+                  )}
+
+                  {request.status === "approved" && request.approved_budget_cents !== null && (
+                    <div className="rounded-lg bg-muted p-3">
+                      <p className="text-sm">
+                        Approved amount:{" "}
+                        <span className="font-semibold">
+                          {formatPrice(request.approved_budget_cents)}
+                        </span>
+                      </p>
+                      {request.payment_status === "paid" ? (
+                        <Badge className="mt-2">Paid</Badge>
+                      ) : (
+                        <>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            Demo checkout only — no card is charged yet.
+                          </p>
+                          <Button
+                            className="mt-3"
+                            size="sm"
+                            disabled={payingRequestId === request.id}
+                            onClick={() => void payForRequest(request)}
+                          >
+                            {payingRequestId === request.id
+                              ? "Processing…"
+                              : `Continue to pay ${formatPrice(request.approved_budget_cents)}`}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {(canEdit || canCancel) && (
+                    <div className="flex flex-wrap gap-2">
+                      {canEdit && (
+                        <Button size="sm" variant="outline" onClick={() => editRequest(request)}>
+                          Edit request
+                        </Button>
+                      )}
+                      {canCancel && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive"
+                          onClick={() => void cancelRequest(request)}
+                        >
+                          Cancel request
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
+      </section>
     </div>
   );
 }
