@@ -199,20 +199,23 @@ function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
     }
   };
 
-  const send = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !draft.trim()) return;
-    const text = draft.trim();
-    setDraft("");
+  const postMessage = async (text: string) => {
+    if (!user || !text.trim()) return false;
     const { error } = await supabase
       .from("chat_messages")
-      .insert({ event_id: eventId, user_id: user.id, message: text });
+      .insert({ event_id: eventId, user_id: user.id, message: text.trim() });
     if (error) {
       toast.error("Message not sent");
-      setDraft(text);
-      return;
+      return false;
     }
     queryClient.invalidateQueries({ queryKey: ["chat", eventId] });
+    return true;
+  };
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = draft.trim();
+    if (await postMessage(text)) setDraft("");
   };
 
   return (
@@ -306,6 +309,20 @@ function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
           ))
         )}
         <div ref={bottomRef} />
+      </div>
+      <div className="flex justify-center gap-2 border-t px-3 py-2" aria-label="Quick reactions">
+        {["❤️", "👍", "👏", "🔥", "🎉"].map((emoji) => (
+          <button
+            key={emoji}
+            type="button"
+            aria-label={`Send ${emoji} reaction`}
+            title={`Send ${emoji} reaction`}
+            onClick={() => void postMessage(emoji)}
+            className="rounded-full px-2 py-1 text-lg transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {emoji}
+          </button>
+        ))}
       </div>
       <form className="flex gap-2 border-t p-3" onSubmit={send}>
         <Input

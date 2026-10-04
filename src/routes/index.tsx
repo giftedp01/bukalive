@@ -70,6 +70,7 @@ function Row({
   loading,
   empty,
   search,
+  expandedCountdown = false,
 }: {
   title: string;
   subtitle: string;
@@ -77,6 +78,7 @@ function Row({
   loading: boolean;
   empty: string;
   search?: { when: "live" | "upcoming" };
+  expandedCountdown?: boolean;
 }) {
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-10">
@@ -105,7 +107,7 @@ function Row({
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {events.map((event) => (
             <div key={event.id} className="space-y-2">
-              <EventCard event={event} />
+              <EventCard event={event} compactCountdown={!expandedCountdown} />
               {eventPhase(event) === "upcoming" && (
                 <SaveButton
                   itemType="experience"
@@ -241,6 +243,7 @@ function Home() {
         loading={isLoading}
         empty="No scheduled experiences yet — hosts are lining them up."
         search={{ when: "upcoming" }}
+        expandedCountdown
       />
 
       <section className="mx-auto w-full max-w-6xl px-4 py-10">

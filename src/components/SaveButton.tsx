@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Bell, BellRing, Bookmark, BookmarkCheck } from "lucide-react";
+import { Bell, BellRing, Bookmark, BookmarkCheck, Heart } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button, type ButtonProps } from "@/components/ui/button";
@@ -66,6 +66,7 @@ export function SaveButton({
   variant = "secondary",
   size,
   reminder,
+  like,
   className,
 }: {
   itemType: ItemType;
@@ -74,12 +75,32 @@ export function SaveButton({
   size?: ButtonProps["size"];
   /** Shows "Remind me" wording (upcoming experiences). */
   reminder?: boolean;
+  /** Uses the experience save as a like, so it stays in My BukaLive. */
+  like?: boolean;
   className?: string;
 }) {
   const { saved, toggle, signedIn } = useSaved(itemType, itemId);
   const navigate = useNavigate();
-  const Icon = reminder ? (saved ? BellRing : Bell) : saved ? BookmarkCheck : Bookmark;
-  const label = reminder ? (saved ? "Reminder set" : "Remind me") : saved ? "Saved" : "Save";
+  const Icon = like
+    ? Heart
+    : reminder
+      ? saved
+        ? BellRing
+        : Bell
+      : saved
+        ? BookmarkCheck
+        : Bookmark;
+  const label = like
+    ? saved
+      ? "Liked"
+      : "Like"
+    : reminder
+      ? saved
+        ? "Reminder set"
+        : "Remind me"
+      : saved
+        ? "Saved"
+        : "Save";
 
   return (
     <Button
@@ -88,6 +109,7 @@ export function SaveButton({
       size={size}
       className={className}
       disabled={toggle.isPending}
+      aria-pressed={like ? saved : undefined}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -96,18 +118,27 @@ export function SaveButton({
           return;
         }
         toggle.mutate(undefined, {
-          onSuccess: (now) =>
-            toast.success(
-              now
-                ? reminder
-                  ? "We'll keep this in My BukaLive"
-                  : "Saved to My BukaLive"
-                : "Removed",
-            ),
+          onSuccess: (now) => {
+            if (now && like) {
+              toast.success("Added to liked experiences");
+            } else if (now && reminder) {
+              toast.success("We'll keep this in My BukaLive");
+            } else if (now) {
+              toast.success("Saved to My BukaLive");
+            } else if (like) {
+              toast.success("Removed from liked experiences");
+            } else {
+              toast.success("Removed");
+            }
+          },
         });
       }}
     >
-      <Icon className="mr-1.5 h-4 w-4" aria-hidden /> {label}
+      <Icon
+        className={`mr-1.5 h-4 w-4 ${like && saved ? "fill-current text-rose-600" : ""}`}
+        aria-hidden
+      />{" "}
+      {label}
     </Button>
   );
 }
