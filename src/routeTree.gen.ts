@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as HostRouteImport } from './routes/host'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as BusinessesSlugRouteImport } from './routes/businesses.$slug'
 import { Route as DestinationsIndexRouteImport } from './routes/destinations.index'
@@ -48,6 +49,11 @@ const BrowseRoute = BrowseRouteImport.update({
 const HostRoute = HostRouteImport.update({
   id: '/host',
   path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TicketsRoute = TicketsRouteImport.update({
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
+  '/map': typeof MapRoute
   '/tickets': typeof TicketsRoute
   '/businesses/$slug': typeof BusinessesSlugRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
+  '/map': typeof MapRoute
   '/tickets': typeof TicketsRoute
   '/businesses/$slug': typeof BusinessesSlugRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/host': typeof HostRouteWithChildren
+  '/map': typeof MapRoute
   '/tickets': typeof TicketsRoute
   '/businesses/$slug': typeof BusinessesSlugRoute
   '/destinations/$slug': typeof DestinationsSlugRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/host'
+    | '/map'
     | '/tickets'
     | '/businesses/$slug'
     | '/destinations/$slug'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/browse'
+    | '/map'
     | '/tickets'
     | '/businesses/$slug'
     | '/destinations/$slug'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/host'
+    | '/map'
     | '/tickets'
     | '/businesses/$slug'
     | '/destinations/$slug'
@@ -211,6 +223,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   HostRoute: typeof HostRouteWithChildren
+  MapRoute: typeof MapRoute
   TicketsRoute: typeof TicketsRoute
   BusinessesSlugRoute: typeof BusinessesSlugRoute
   DestinationsSlugRoute: typeof DestinationsSlugRoute
@@ -254,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/host'
       fullPath: '/host'
       preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tickets': {
@@ -351,6 +371,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   HostRoute: HostRouteWithChildren,
+  MapRoute: MapRoute,
   TicketsRoute: TicketsRoute,
   BusinessesSlugRoute: BusinessesSlugRoute,
   DestinationsSlugRoute: DestinationsSlugRoute,
