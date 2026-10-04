@@ -183,9 +183,24 @@ function EventDetail() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Access unlocked — find it under My tickets");
+      if (!event) return;
+
       queryClient.invalidateQueries({ queryKey: ["purchase", eventId] });
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
+
+      if (event.price_cents === 0) {
+        if (eventPhase(event) === "ended" && hasReplay) {
+          navigate({ to: "/replay/$eventId", params: { eventId: event.id } });
+          return;
+        }
+
+        if (isWatchable(event)) {
+          navigate({ to: "/watch/$eventId", params: { eventId: event.id } });
+          return;
+        }
+      }
+
+      toast.success("Access unlocked — find it under My tickets");
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : "Payment failed"),
   });
