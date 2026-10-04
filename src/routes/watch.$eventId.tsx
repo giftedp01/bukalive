@@ -96,9 +96,14 @@ function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
     },
   });
 
-  const visibleMessages = (messages ?? []).filter(
-    (message) => !blockedUserIds.includes(message.user_id),
-  );
+  const visibleMessages = [...(messages ?? [])]
+    .filter((message) => !blockedUserIds.includes(message.user_id))
+    .sort((a, b) => {
+      const questionPriority = Number(b.is_question) - Number(a.is_question);
+      if (questionPriority !== 0) return questionPriority;
+      if (!!a.answer !== !!b.answer) return Number(!!b.answer) - Number(!!a.answer);
+      return new Date(a.sent_at).getTime() - new Date(b.sent_at).getTime();
+    });
 
   useEffect(() => {
     const channel = supabase
@@ -264,7 +269,14 @@ function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
 
                   {message.answer ? (
                     <div className="mt-2 rounded-md bg-background/70 p-2 text-left text-muted-foreground">
-                      <p className="font-medium text-foreground">Host reply</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-foreground">Host reply</p>
+                        {message.answered_at && (
+                          <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-primary">
+                            Answered
+                          </span>
+                        )}
+                      </div>
                       <p className="mt-1 whitespace-pre-wrap">{message.answer}</p>
                     </div>
                   ) : isHost ? (
