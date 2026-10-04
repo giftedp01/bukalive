@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Clock, MapPin, Radio, Ticket } from "lucide-react";
+import { CalendarClock, Clock, MapPin, MessageCircle, Radio, Ticket } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -8,6 +8,7 @@ import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { AdSlot } from "@/components/AdSlot";
 import { BlockButton } from "@/components/BlockButton";
 import { ReportButton } from "@/components/ReportButton";
+import { SaveButton } from "@/components/SaveButton";
 import { SubExperienceList } from "@/components/SubExperienceList";
 import { Countdown } from "@/components/Countdown";
 import { CoverImage } from "@/components/CoverImage";
@@ -213,6 +214,28 @@ function EventDetail() {
 
   const phase = eventPhase(event);
   const owned = !!purchase;
+  const hasReplay = !!(event.video_path || event.video_url || event.replay_url);
+
+  const openComments = () => {
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
+    if (!owned) {
+      document.getElementById("event-access")?.scrollIntoView({ behavior: "smooth" });
+      toast.info("Get a ticket to join the comments");
+      return;
+    }
+    if (phase === "ended" && hasReplay) {
+      navigate({ to: "/replay/$eventId", params: { eventId: event.id } });
+      return;
+    }
+    if (isWatchable(event)) {
+      navigate({ to: "/watch/$eventId", params: { eventId: event.id } });
+      return;
+    }
+    toast.info("Comments open when the stream starts");
+  };
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
@@ -249,6 +272,19 @@ function EventDetail() {
             </span>
           </div>
         </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <SaveButton itemType="experience" itemId={event.id} like />
+        <Button variant="outline" onClick={openComments}>
+          <MessageCircle className="mr-2 h-4 w-4" aria-hidden />
+          Comment
+        </Button>
+        {!owned && (
+          <p className="text-sm text-muted-foreground">
+            Get a ticket to join the comments and count yourself among the viewers.
+          </p>
+        )}
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -335,7 +371,7 @@ function EventDetail() {
         </div>
 
         <aside className="space-y-4">
-          <Card className="shadow-soft">
+          <Card id="event-access" className="scroll-mt-24 shadow-soft">
             <CardContent className="space-y-4 pt-6">
               <div>
                 <p className="text-sm text-muted-foreground">Access price</p>
@@ -389,7 +425,7 @@ function EventDetail() {
                         : "The watch page opens at the scheduled start time."}
                   </p>
                 </div>
-              ) : phase === "ended" ? (
+              ) : phase === "ended" && !hasReplay ? (
                 <Button className="w-full" disabled>
                   This event has ended
                 </Button>
@@ -398,7 +434,9 @@ function EventDetail() {
                   {buy.isPending
                     ? "Processing…"
                     : event.price_cents === 0
-                      ? "Get free access"
+                      ? phase === "ended"
+                        ? "Get free replay ticket"
+                        : "Get free ticket"
                       : `Pay ${formatPrice(event.price_cents, event.currency)}`}
                 </Button>
               )}

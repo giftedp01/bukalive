@@ -283,8 +283,27 @@ function Tickets() {
                     </div>
                     <div className="flex flex-col items-start gap-2 sm:items-end">
                       {phase === "upcoming" && <Countdown target={event.scheduled_at} compact />}
-                      <Button size="sm" disabled={!isWatchable(event)} asChild={isWatchable(event)}>
-                        {isWatchable(event) ? (
+                      <Button
+                        size="sm"
+                        disabled={
+                          !isWatchable(event) &&
+                          !(
+                            phase === "ended" &&
+                            (event.video_path || event.video_url || event.replay_url)
+                          )
+                        }
+                        asChild={
+                          isWatchable(event) ||
+                          (phase === "ended" &&
+                            !!(event.video_path || event.video_url || event.replay_url))
+                        }
+                      >
+                        {phase === "ended" &&
+                        (event.video_path || event.video_url || event.replay_url) ? (
+                          <Link to="/replay/$eventId" params={{ eventId: event.id }}>
+                            Watch replay
+                          </Link>
+                        ) : isWatchable(event) ? (
                           <Link to="/watch/$eventId" params={{ eventId: event.id }}>
                             Watch now
                           </Link>

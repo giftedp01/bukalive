@@ -47,6 +47,7 @@ export function EventCard({
   });
   const hasChatAccess = !!ownsTicket || user?.id === event.host_id;
   const canOpenChat = hasChatAccess && isWatchable(event);
+  const hasReplay = !!(event.video_path || event.video_url || event.replay_url);
   const destination = destinations?.find((d) => d.slug === event.destination_id);
   const country = countryName(event.country_id ?? destination?.country_id);
   const place = destination?.name ?? event.location;
@@ -132,7 +133,7 @@ export function EventCard({
           variant="ghost"
           className="h-8 shrink-0 px-2"
         />
-        {(!user || !ticketStatusLoading) && (ownsTicket || phase !== "ended") && (
+        {(!user || !ticketStatusLoading) && (ownsTicket || phase !== "ended" || hasReplay) && (
           <Button
             size="sm"
             variant="ghost"
@@ -159,29 +160,33 @@ export function EventCard({
             </Link>
           </Button>
         )}
-        {hasChatAccess &&
-          phase !== "ended" &&
-          (canOpenChat ? (
-            <Button variant="ghost" size="sm" className="h-8 shrink-0 px-2" asChild>
-              <Link
-                to="/watch/$eventId"
-                params={{ eventId: event.id }}
-                aria-label={`Open live chat for ${event.title}`}
-              >
-                <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden /> Comment
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 shrink-0 px-2"
-              disabled
-              title="Chat opens when the event starts"
-            >
-              <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden /> Chat opens at start
-            </Button>
-          ))}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 shrink-0 px-2"
+          asChild
+          title={
+            !hasChatAccess
+              ? "Get a ticket to comment"
+              : phase !== "ended"
+                ? "Comments open when the stream starts"
+                : undefined
+          }
+        >
+          <Link
+            to={
+              hasChatAccess && canOpenChat
+                ? "/watch/$eventId"
+                : ownsTicket && phase === "ended" && hasReplay
+                  ? "/replay/$eventId"
+                  : destinationPath
+            }
+            params={{ eventId: event.id }}
+            aria-label={`Comment on ${event.title}`}
+          >
+            <MessageCircle className="mr-1.5 h-4 w-4" aria-hidden /> Comment
+          </Link>
+        </Button>
       </div>
     </article>
   );
