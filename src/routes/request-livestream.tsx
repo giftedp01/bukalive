@@ -44,6 +44,19 @@ type LivestreamRequest = {
   created_at: string;
 };
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error) return error.message;
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+  return fallback;
+}
+
 function RequestLivestreamPage() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
@@ -123,7 +136,7 @@ function RequestLivestreamPage() {
       resetForm();
       await queryClient.invalidateQueries({ queryKey: ["my-livestream-requests", user.id] });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not save your request");
+      toast.error(getErrorMessage(error, "Could not save your request"));
     } finally {
       setSubmitting(false);
     }
