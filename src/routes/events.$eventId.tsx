@@ -4,6 +4,7 @@ import { CalendarClock, Clock, MapPin, Radio, Ticket } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { AdSlot } from "@/components/AdSlot";
 import { BlockButton } from "@/components/BlockButton";
 import { ReportButton } from "@/components/ReportButton";
@@ -257,6 +258,11 @@ function EventDetail() {
               {event.description || "The host hasn't added a description yet."}
             </p>
           </section>
+
+          <AccessibilityPanel
+            eventTitle={event.title}
+            category={event.category_id ?? event.category}
+          />
 
           {event.subExperiences && event.subExperiences.length > 0 && (
             <SubExperienceList subExperiences={event.subExperiences} eventId={event.id} />

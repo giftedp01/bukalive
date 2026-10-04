@@ -6,6 +6,7 @@ import { Lock, Send } from "lucide-react";
 const LivePlayer = lazy(() => import("@/components/LivePlayer"));
 import { toast } from "sonner";
 
+import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { AdSlot } from "@/components/AdSlot";
 import { Countdown } from "@/components/Countdown";
 import { Badge } from "@/components/ui/badge";
@@ -415,6 +416,11 @@ function WatchPage() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
+          <AccessibilityPanel
+            eventTitle={event.title}
+            category={event.category_id ?? event.category}
+          />
+
           <ClientOnly fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
             <Suspense fallback={<Skeleton className="aspect-video w-full rounded-3xl" />}>
               <LivePlayer eventId={event.id} subExperienceId={subExperienceId} />
