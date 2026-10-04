@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Clock, MapPin, Radio, Ticket } from "lucide-react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { AdSlot } from "@/components/AdSlot";
@@ -23,6 +24,7 @@ import {
   isWatchable,
   type BukaEvent,
 } from "@/lib/buka";
+import { trackEvent } from "@/lib/track";
 
 export const Route = createFileRoute("/events/$eventId")({
   head: () => ({
@@ -156,9 +158,15 @@ function EventDetail() {
     },
   });
 
+  useEffect(() => {
+    if (!event || !user) return;
+    trackEvent(event.id, "view", user.id);
+  }, [event, user]);
+
   const buy = useMutation({
     mutationFn: async () => {
       if (!user || !event) throw new Error("Please sign in first");
+      trackEvent(event.id, "booking_click", user.id);
       // MOCK PAYMENT: a real provider (Stripe/Paddle) charges here and the
       // purchase row is written after a confirmed payment webhook.
       const { error } = await supabase.from("purchases").insert({

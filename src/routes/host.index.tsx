@@ -66,6 +66,34 @@ function HostDashboard() {
     },
   });
 
+  const { data: engagement } = useQuery({
+    queryKey: ["host-engagement", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("analytics_events").select("event_id, kind");
+      if (error) throw error;
+
+      const totals = new Map<
+        string,
+        { views: number; saves: number; shares: number; bookings: number }
+      >();
+      for (const row of data ?? []) {
+        const current = totals.get(row.event_id) ?? {
+          views: 0,
+          saves: 0,
+          shares: 0,
+          bookings: 0,
+        };
+        if (row.kind === "view") current.views += 1;
+        if (row.kind === "save") current.saves += 1;
+        if (row.kind === "share") current.shares += 1;
+        if (row.kind === "booking_click") current.bookings += 1;
+        totals.set(row.event_id, current);
+      }
+      return totals;
+    },
+  });
+
   const setStatus = async (event: BukaEvent, status: BukaEvent["status"]) => {
     const { error } = await supabase.from("events").update({ status }).eq("id", event.id);
     if (error) {
@@ -117,6 +145,10 @@ function HostDashboard() {
   const list = events ?? [];
   const totalCents = list.reduce((sum, event) => sum + (sales?.get(event.id)?.cents ?? 0), 0);
   const totalTickets = list.reduce((sum, event) => sum + (sales?.get(event.id)?.count ?? 0), 0);
+  const totalEngagement = list.reduce((sum, event) => {
+    const stats = engagement?.get(event.id) ?? { views: 0, saves: 0, shares: 0, bookings: 0 };
+    return sum + stats.views + stats.saves + stats.shares + stats.bookings;
+  }, 0);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -134,11 +166,12 @@ function HostDashboard() {
         </Button>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Events", value: String(list.length) },
           { label: "Tickets sold", value: String(totalTickets) },
           { label: "Gross revenue", value: formatPrice(totalCents) },
+          { label: "Engagement", value: String(totalEngagement) },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-6">
@@ -171,6 +204,14 @@ function HostDashboard() {
           {list.map((event) => {
             const phase = eventPhase(event);
             const stat = sales?.get(event.id);
+            const stats = engagement?.get(event.id) ?? {
+              views: 0,
+              saves: 0,
+              shares: 0,
+              bookings: 0,
+            };
+            const eventEngagement = stats.views + stats.saves + stats.shares + stats.bookings;
+
             return (
               <div
                 key={event.id}
@@ -195,7 +236,8 @@ function HostDashboard() {
                   <p className="text-sm text-muted-foreground">{formatWhen(event.scheduled_at)}</p>
                   <p className="text-xs text-muted-foreground">
                     {stat?.count ?? 0} ticket{(stat?.count ?? 0) === 1 ? "" : "s"} ·{" "}
-                    {formatPrice(stat?.cents ?? 0)} · {event.view_count} views
+                    {formatPrice(stat?.cents ?? 0)} · {eventEngagement} engagement actions ·{" "}
+                    {event.view_count} views
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">

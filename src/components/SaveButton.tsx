@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { trackEvent } from "@/lib/track";
 
 type ItemType = "experience" | "destination" | "business";
 
@@ -50,6 +51,9 @@ export function useSaved(itemType: ItemType, itemId: string) {
     onSuccess: (now) => {
       queryClient.setQueryData(key, now);
       queryClient.invalidateQueries({ queryKey: ["saves", user?.id] });
+      if (now && user) {
+        trackEvent(itemId, "save", user.id);
+      }
     },
     onError: () => toast.error("Could not update your saved list"),
   });
