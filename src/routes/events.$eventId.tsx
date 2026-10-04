@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { ExperienceJourney } from "@/components/ExperienceJourney";
+import { purchaseAccess } from "@/lib/purchases.functions";
 import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
 import {
   categoryLabel,
@@ -68,7 +69,7 @@ function EventDetail() {
     enabled: !!event?.host_id,
     queryFn: async () => {
       const { data } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("full_name, bio, host_bio, avatar_url")
         .eq("id", event!.host_id)
         .maybeSingle();
@@ -93,17 +94,8 @@ function EventDetail() {
   const buy = useMutation({
     mutationFn: async () => {
       if (!user || !event) throw new Error("Please sign in first");
-      // MOCK PAYMENT: a real provider (Stripe/Paddle) charges here and the
-      // purchase row is written after a confirmed payment webhook.
-      const { error } = await supabase.from("purchases").insert({
-        event_id: event.id,
-        viewer_id: user.id,
-        amount_cents: event.price_cents,
-        currency: event.currency,
-        provider: "mock",
-        provider_ref: `mock_${crypto.randomUUID()}`,
-      });
-      if (error) throw error;
+      // MOCK PAYMENT: recorded server-side at the stored event price.
+      await purchaseAccess({ data: { eventId: event.id } });
     },
     onSuccess: () => {
       toast.success("Access unlocked — find it under My tickets");
