@@ -17,7 +17,11 @@ export const Route = createFileRoute("/destinations/$slug")({
   head: () => ({
     meta: [
       { title: "Destination — BukaLive" },
-      { name: "description", content: "Live and recorded experiences, nearby stays, food and attractions for this destination." },
+      {
+        name: "description",
+        content:
+          "Live and recorded experiences, nearby stays, food and attractions for this destination.",
+      },
       { property: "og:title", content: "Destination — BukaLive" },
       { property: "og:description", content: "Watch it live, then plan your visit." },
       { property: "og:type", content: "website" },
@@ -33,7 +37,9 @@ function Section({ title, events }: { title: string; events: BukaEvent[] }) {
     <section className="mt-10">
       <h2 className="mb-4 font-display text-2xl">{title}</h2>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {events.map((e) => <EventCard key={e.id} event={e} />)}
+        {events.map((e) => (
+          <EventCard key={e.id} event={e} />
+        ))}
       </div>
     </section>
   );
@@ -59,12 +65,19 @@ function DestinationPage() {
     },
   });
 
-  if (isLoading) return <div className="mx-auto max-w-6xl px-4 py-10"><Skeleton className="h-96 rounded-3xl" /></div>;
+  if (isLoading)
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <Skeleton className="h-96 rounded-3xl" />
+      </div>
+    );
   if (!d) {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center">
         <h1 className="font-display text-2xl">Destination not found</h1>
-        <Button className="mt-6" asChild><Link to="/destinations">All destinations</Link></Button>
+        <Button className="mt-6" asChild>
+          <Link to="/destinations">All destinations</Link>
+        </Button>
       </div>
     );
   }
@@ -76,18 +89,32 @@ function DestinationPage() {
   return (
     <div>
       <section className="relative isolate">
-        <img src={destinationImage(d)} alt={d.name} width={1280} height={800} className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={destinationImage(d)}
+          alt={d.name}
+          width={1280}
+          height={800}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-scrim" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 pb-12 pt-32 text-primary-foreground sm:pt-48">
           <div className="mb-3 flex flex-wrap gap-2">
             {d.is_sample && <SampleBadge />}
-            {live.length > 0 && <span className="inline-flex items-center gap-2 rounded-full bg-live px-3 py-1 text-xs font-semibold text-live-foreground"><span className="live-dot" /> {live.length} live now</span>}
+            {live.length > 0 && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-live px-3 py-1 text-xs font-semibold text-live-foreground">
+                <span className="live-dot" /> {live.length} live now
+              </span>
+            )}
           </div>
-          <p className="text-sm uppercase tracking-widest opacity-90">{[d.city, d.region, countryName(d.country_id)].filter(Boolean).join(" · ")}</p>
+          <p className="text-sm uppercase tracking-widest opacity-90">
+            {[d.city, d.region, countryName(d.country_id)].filter(Boolean).join(" · ")}
+          </p>
           <h1 className="font-display text-5xl sm:text-6xl">{d.name}</h1>
           <p className="mt-3 max-w-2xl text-lg opacity-90">{d.summary}</p>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Button asChild><a href="#plan">Plan your visit</a></Button>
+            <Button asChild>
+              <a href="#plan">Plan your visit</a>
+            </Button>
             <SaveButton itemType="destination" itemId={d.slug} />
           </div>
         </div>
@@ -100,10 +127,23 @@ function DestinationPage() {
             <p className="mt-2 text-muted-foreground">{d.description}</p>
           </div>
           <div className="space-y-2 rounded-2xl bg-sand p-5 text-sm text-sand-foreground">
-            {d.category_id && <p><strong>Known for:</strong> {categoryLabel(d.category_id)}</p>}
-            {d.best_time && <p className="flex gap-2"><CalendarDays className="h-4 w-4 shrink-0" /> Best time: {d.best_time}</p>}
+            {d.category_id && (
+              <p>
+                <strong>Known for:</strong> {categoryLabel(d.category_id)}
+              </p>
+            )}
+            {d.best_time && (
+              <p className="flex gap-2">
+                <CalendarDays className="h-4 w-4 shrink-0" /> Best time: {d.best_time}
+              </p>
+            )}
             {d.latitude != null && (
-              <a className="flex gap-2 font-medium underline" target="_blank" rel="noopener noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${d.latitude},${d.longitude}`}>
+              <a
+                className="flex gap-2 font-medium underline"
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`https://www.google.com/maps/search/?api=1&query=${d.latitude},${d.longitude}`}
+              >
                 <MapPin className="h-4 w-4 shrink-0" /> Open in maps
               </a>
             )}
@@ -113,7 +153,11 @@ function DestinationPage() {
         <Section title="Live now in this destination" events={live} />
         <Section title="Upcoming" events={upcoming} />
         <Section title="Watch replays" events={replays} />
-        {!events.length && <p className="mt-10 rounded-2xl bg-muted p-6 text-center text-sm text-muted-foreground">No experiences scheduled here yet.</p>}
+        {!events.length && (
+          <p className="mt-10 rounded-2xl bg-muted p-6 text-center text-sm text-muted-foreground">
+            No experiences scheduled here yet.
+          </p>
+        )}
 
         <section id="plan" className="mt-12 scroll-mt-20">
           <h2 className="mb-4 font-display text-3xl">Plan your visit</h2>

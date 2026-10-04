@@ -68,7 +68,10 @@ export function EventCard({ event }: { event: BukaEvent }) {
         {event.business && (
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span className="line-clamp-1">by {event.business.name}</span>
-            <VerifiedBadge status={event.business.verification_status as VerificationStatus} compact />
+            <VerifiedBadge
+              status={event.business.verification_status as VerificationStatus}
+              compact
+            />
           </div>
         )}
         <div className="flex items-center justify-between text-sm text-muted-foreground">

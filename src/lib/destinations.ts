@@ -110,7 +110,9 @@ export const BUSINESS_TYPES: Record<string, string> = {
   local_experience: "Local experience provider",
 };
 
-export function destinationImage(d: Pick<Destination, "image_key" | "cover_image_url"> | null | undefined) {
+export function destinationImage(
+  d: Pick<Destination, "image_key" | "cover_image_url"> | null | undefined,
+) {
   if (!d) return undefined;
   return d.cover_image_url ?? (d.image_key ? DESTINATION_IMAGES[d.image_key] : undefined);
 }
@@ -119,7 +121,10 @@ export const destinationsQuery = queryOptions({
   queryKey: ["destinations"],
   staleTime: 10 * 60_000,
   queryFn: async () => {
-    const { data, error } = await supabase.from("destinations" as never).select("*").order("name");
+    const { data, error } = await supabase
+      .from("destinations" as never)
+      .select("*")
+      .order("name");
     if (error) throw error;
     return (data ?? []) as unknown as Destination[];
   },

@@ -79,7 +79,10 @@ function Browse() {
       if (when === "upcoming") {
         query = query.neq("status", "ended").gte("scheduled_at", new Date().toISOString());
       }
-      if (q.trim()) query = query.or(`title.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%,subcategory.ilike.%${q}%`);
+      if (q.trim())
+        query = query.or(
+          `title.ilike.%${q}%,location.ilike.%${q}%,description.ilike.%${q}%,subcategory.ilike.%${q}%`,
+        );
       if (tourism_category) query = query.eq("category_id", tourism_category);
       if (country) query = query.eq("country_id", country);
 

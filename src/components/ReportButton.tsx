@@ -62,7 +62,12 @@ export function ReportButton({ itemType, itemId, label = "Report", compact }: Pr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size={compact ? "icon" : "sm"} aria-label={label} className="text-muted-foreground">
+        <Button
+          variant="ghost"
+          size={compact ? "icon" : "sm"}
+          aria-label={label}
+          className="text-muted-foreground"
+        >
           <Flag className="h-3.5 w-3.5" aria-hidden />
           {!compact && <span className="ml-1">{label}</span>}
         </Button>

@@ -18,10 +18,14 @@ export const Route = createFileRoute("/admin")({
       { title: "Admin — BukaLive" },
       {
         name: "description",
-        content: "Moderate BukaLive hosts and events, approve applications and review platform activity.",
+        content:
+          "Moderate BukaLive hosts and events, approve applications and review platform activity.",
       },
       { property: "og:title", content: "Admin — BukaLive" },
-      { property: "og:description", content: "Moderation and oversight for the BukaLive marketplace." },
+      {
+        property: "og:description",
+        content: "Moderation and oversight for the BukaLive marketplace.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -241,7 +245,8 @@ function AdminPage() {
                     {!event.is_published && <Badge variant="outline">Unpublished</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {formatWhen(event.scheduled_at)} · {formatPrice(event.price_cents, event.currency)}
+                    {formatWhen(event.scheduled_at)} ·{" "}
+                    {formatPrice(event.price_cents, event.currency)}
                   </p>
                 </div>
                 <div className="flex gap-2">

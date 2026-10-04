@@ -16,9 +16,16 @@ export const Route = createFileRoute("/businesses/$slug")({
   head: () => ({
     meta: [
       { title: "Tourism business — BukaLive" },
-      { name: "description", content: "Live experiences, upcoming broadcasts and booking links from this tourism provider." },
+      {
+        name: "description",
+        content:
+          "Live experiences, upcoming broadcasts and booking links from this tourism provider.",
+      },
       { property: "og:title", content: "Tourism business — BukaLive" },
-      { property: "og:description", content: "Watch, follow and book with this provider on BukaLive." },
+      {
+        property: "og:description",
+        content: "Watch, follow and book with this provider on BukaLive.",
+      },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -31,7 +38,11 @@ function BusinessPage() {
   const { data: b, isLoading } = useQuery({
     queryKey: ["business", slug],
     queryFn: async () => {
-      const { data } = await supabase.from("businesses" as never).select("*").eq("slug", slug).maybeSingle();
+      const { data } = await supabase
+        .from("businesses" as never)
+        .select("*")
+        .eq("slug", slug)
+        .maybeSingle();
       return (data as unknown as Business) ?? null;
     },
   });
@@ -39,13 +50,28 @@ function BusinessPage() {
     queryKey: ["events", "business", b?.id],
     enabled: !!b,
     queryFn: async () => {
-      const { data } = await supabase.from("events").select(EVENT_SELECT).eq("business_id" as never, b!.id).eq("is_published", true).order("scheduled_at");
+      const { data } = await supabase
+        .from("events")
+        .select(EVENT_SELECT)
+        .eq("business_id" as never, b!.id)
+        .eq("is_published", true)
+        .order("scheduled_at");
       return (data ?? []) as unknown as BukaEvent[];
     },
   });
 
-  if (isLoading) return <div className="mx-auto max-w-5xl px-4 py-10"><Skeleton className="h-60 rounded-3xl" /></div>;
-  if (!b) return <div className="py-20 text-center"><h1 className="font-display text-2xl">Business not found</h1></div>;
+  if (isLoading)
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10">
+        <Skeleton className="h-60 rounded-3xl" />
+      </div>
+    );
+  if (!b)
+    return (
+      <div className="py-20 text-center">
+        <h1 className="font-display text-2xl">Business not found</h1>
+      </div>
+    );
 
   const live = events.filter((e) => eventPhase(e) === "live");
   const upcoming = events.filter((e) => eventPhase(e) === "upcoming");
@@ -59,20 +85,49 @@ function BusinessPage() {
           {b.is_sample && <SampleBadge />}
         </div>
         <h1 className="mt-3 font-display text-4xl">{b.name}</h1>
-        <p className="mt-1 flex items-center gap-1 text-sm"><MapPin className="h-4 w-4" /> {[b.city, countryName(b.country_id)].filter(Boolean).join(", ")}</p>
-        <p className="mt-1 text-sm">{BUSINESS_TYPES[b.business_type] ?? b.business_type}{b.category_id ? ` · ${categoryLabel(b.category_id)}` : ""}</p>
+        <p className="mt-1 flex items-center gap-1 text-sm">
+          <MapPin className="h-4 w-4" />{" "}
+          {[b.city, countryName(b.country_id)].filter(Boolean).join(", ")}
+        </p>
+        <p className="mt-1 text-sm">
+          {BUSINESS_TYPES[b.business_type] ?? b.business_type}
+          {b.category_id ? ` · ${categoryLabel(b.category_id)}` : ""}
+        </p>
         <div className="mt-5 flex flex-wrap gap-2">
-          {b.website && <Button asChild><a href={b.website} target="_blank" rel="noopener noreferrer">Book <ExternalLink className="ml-1 h-4 w-4" /></a></Button>}
+          {b.website && (
+            <Button asChild>
+              <a href={b.website} target="_blank" rel="noopener noreferrer">
+                Book <ExternalLink className="ml-1 h-4 w-4" />
+              </a>
+            </Button>
+          )}
           <SaveButton itemType="business" itemId={b.slug} />
-          {b.destination_slug && <Button variant="outline" asChild><Link to="/destinations/$slug" params={{ slug: b.destination_slug }} hash="plan">Go there</Link></Button>}
+          {b.destination_slug && (
+            <Button variant="outline" asChild>
+              <Link to="/destinations/$slug" params={{ slug: b.destination_slug }} hash="plan">
+                Go there
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
-      <section className="mt-8"><h2 className="font-display text-2xl">About</h2><p className="mt-2 text-muted-foreground">{b.description || b.summary}</p></section>
-      {[["Live experiences", live], ["Upcoming", upcoming], ["Replays", past]].map(([t, list]) =>
+      <section className="mt-8">
+        <h2 className="font-display text-2xl">About</h2>
+        <p className="mt-2 text-muted-foreground">{b.description || b.summary}</p>
+      </section>
+      {[
+        ["Live experiences", live],
+        ["Upcoming", upcoming],
+        ["Replays", past],
+      ].map(([t, list]) =>
         (list as BukaEvent[]).length ? (
           <section key={t as string} className="mt-10">
             <h2 className="mb-4 font-display text-2xl">{t as string}</h2>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{(list as BukaEvent[]).map((e) => <EventCard key={e.id} event={e} />)}</div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {(list as BukaEvent[]).map((e) => (
+                <EventCard key={e.id} event={e} />
+              ))}
+            </div>
           </section>
         ) : null,
       )}

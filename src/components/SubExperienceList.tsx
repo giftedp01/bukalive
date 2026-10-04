@@ -37,13 +37,7 @@ function StatusBadge({ sub }: { sub: SubExperience }) {
 
 // ─── Action buttons ───────────────────────────────────────────────────────────
 
-function ActionButtons({
-  sub,
-  eventId,
-}: {
-  sub: SubExperience;
-  eventId: string;
-}) {
+function ActionButtons({ sub, eventId }: { sub: SubExperience; eventId: string }) {
   const { actions, status } = sub;
   if (!actions) return null;
 
@@ -114,13 +108,7 @@ function ActionButtons({
 
 // ─── Sub-experience card ──────────────────────────────────────────────────────
 
-function SubExperienceCard({
-  sub,
-  eventId,
-}: {
-  sub: SubExperience;
-  eventId: string;
-}) {
+function SubExperienceCard({ sub, eventId }: { sub: SubExperience; eventId: string }) {
   return (
     <Card>
       <CardContent className="space-y-3 pt-5">
@@ -129,9 +117,7 @@ function SubExperienceCard({
           <StatusBadge sub={sub} />
         </div>
 
-        {sub.description && (
-          <p className="text-sm text-muted-foreground">{sub.description}</p>
-        )}
+        {sub.description && <p className="text-sm text-muted-foreground">{sub.description}</p>}
 
         <ActionButtons sub={sub} eventId={eventId} />
       </CardContent>

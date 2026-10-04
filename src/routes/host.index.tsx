@@ -18,7 +18,8 @@ export const Route = createFileRoute("/host/")({
       { title: "Host dashboard — BukaLive" },
       {
         name: "description",
-        content: "Manage your BukaLive broadcasts, go live, and track viewers and revenue per event.",
+        content:
+          "Manage your BukaLive broadcasts, go live, and track viewers and revenue per event.",
       },
       { property: "og:title", content: "Host dashboard — BukaLive" },
       { property: "og:description", content: "Your events, viewers and earnings in one place." },
@@ -199,7 +200,11 @@ function HostDashboard() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {event.status === "live" ? (
-                    <Button size="sm" variant="destructive" onClick={() => setStatus(event, "ended")}>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => setStatus(event, "ended")}
+                    >
                       <Square className="mr-2 h-4 w-4" aria-hidden /> End session
                     </Button>
                   ) : (

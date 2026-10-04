@@ -35,7 +35,11 @@ function EditEvent() {
     queryKey: ["host-event", eventId],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", eventId)
+        .maybeSingle();
       if (error) throw error;
       return (data as BukaEvent | null) ?? null;
     },

@@ -10,7 +10,8 @@ export const Route = createFileRoute("/host/events/new")({
       { title: "Create an event — BukaLive" },
       {
         name: "description",
-        content: "Schedule a new live broadcast, set your price and publish it to BukaLive viewers.",
+        content:
+          "Schedule a new live broadcast, set your price and publish it to BukaLive viewers.",
       },
       { property: "og:title", content: "Create an event — BukaLive" },
       { property: "og:description", content: "Schedule and price your next live broadcast." },

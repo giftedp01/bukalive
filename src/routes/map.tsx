@@ -10,10 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoverImage } from "@/components/CoverImage";
 import { supabase } from "@/integrations/supabase/client";
-import { CATEGORIES } from "@/data/categories";
 import { countryName } from "@/data/countries";
 import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
-import { eventPhase, formatWhen, type BukaEvent } from "@/lib/buka";
+import { CATEGORIES, eventPhase, formatWhen, type BukaEvent } from "@/lib/buka";
 import type { MapMarker } from "@/components/WorldMap";
 
 const WorldMap = lazy(() => import("@/components/WorldMap").then((m) => ({ default: m.WorldMap })));
@@ -24,7 +23,10 @@ export const Route = createFileRoute("/map")({
   head: () => ({
     meta: [
       { title: "Live World Map — BukaLive" },
-      { name: "description", content: "See what's live, starting soon and recorded at destinations around the world." },
+      {
+        name: "description",
+        content: "See what's live, starting soon and recorded at destinations around the world.",
+      },
       { property: "og:title", content: "Live World Map — BukaLive" },
       { property: "og:description", content: "Explore live tourism experiences on a world map." },
       { property: "og:type", content: "website" },
@@ -44,7 +46,11 @@ function MapPage() {
   const { data: events } = useQuery({
     queryKey: ["map-events"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select(EVENT_SELECT).eq("is_published", true).limit(500);
+      const { data, error } = await supabase
+        .from("events")
+        .select(EVENT_SELECT)
+        .eq("is_published", true)
+        .limit(500);
       if (error) throw error;
       return (data ?? []) as unknown as BukaEvent[];
     },
@@ -58,7 +64,8 @@ function MapPage() {
         const lat = e.latitude ?? d?.latitude;
         const lng = e.longitude ?? d?.longitude;
         const phase = eventPhase(e);
-        const kind: MapMarker["kind"] = phase === "live" ? "live" : phase === "upcoming" ? "upcoming" : "recorded";
+        const kind: MapMarker["kind"] =
+          phase === "live" ? "live" : phase === "upcoming" ? "upcoming" : "recorded";
         return { e, d, lat, lng, kind };
       })
       .filter((x) => x.lat != null && x.lng != null)
@@ -74,7 +81,14 @@ function MapPage() {
   }, [events, destinations, filter, category, q]);
 
   const markers = useMemo<MapMarker[]>(
-    () => filtered.map((x) => ({ id: x.e.id, lat: x.lat!, lng: x.lng!, kind: x.kind, title: x.e.title })),
+    () =>
+      filtered.map((x) => ({
+        id: x.e.id,
+        lat: x.lat!,
+        lng: x.lng!,
+        kind: x.kind,
+        title: x.e.title,
+      })),
     [filtered],
   );
   const onSelect = useCallback((id: string) => setSelected(id), []);
@@ -87,12 +101,31 @@ function MapPage() {
 
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input className="pl-9" placeholder="Search a place or country" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Search
+            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            className="pl-9"
+            placeholder="Search a place or country"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
         {(["all", "live", "upcoming", "recorded"] as Filter[]).map((f) => (
-          <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
-            {f === "all" ? "All" : f === "live" ? "🔴 Live now" : f === "upcoming" ? "🟡 Starting soon" : "🔵 Recorded"}
+          <Button
+            key={f}
+            size="sm"
+            variant={filter === f ? "default" : "outline"}
+            onClick={() => setFilter(f)}
+          >
+            {f === "all"
+              ? "All"
+              : f === "live"
+                ? "🔴 Live now"
+                : f === "upcoming"
+                  ? "🟡 Starting soon"
+                  : "🔵 Recorded"}
           </Button>
         ))}
         <select
@@ -120,15 +153,24 @@ function MapPage() {
         {sel && (
           <div className="absolute bottom-4 left-4 right-4 z-10 flex gap-3 rounded-2xl border bg-card p-3 shadow-lg sm:right-auto sm:w-96">
             <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl">
-              <CoverImage path={sel.e.cover_image_url} fallback={destinationImage(sel.d)} alt={sel.e.title} />
+              <CoverImage
+                path={sel.e.cover_image_url}
+                fallback={destinationImage(sel.d)}
+                alt={sel.e.title}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <Badge variant={sel.kind === "live" ? "default" : "secondary"} className="mb-1">
-                {sel.kind === "live" ? "LIVE NOW" : sel.kind === "upcoming" ? formatWhen(sel.e.scheduled_at) : "Replay"}
+                {sel.kind === "live"
+                  ? "LIVE NOW"
+                  : sel.kind === "upcoming"
+                    ? formatWhen(sel.e.scheduled_at)
+                    : "Replay"}
               </Badge>
               <p className="truncate font-medium">{sel.e.title}</p>
               <p className="truncate text-xs text-muted-foreground">
-                {sel.d?.name ?? sel.e.location} · {countryName(sel.e.country_id ?? sel.d?.country_id)}
+                {sel.d?.name ?? sel.e.location} ·{" "}
+                {countryName(sel.e.country_id ?? sel.d?.country_id)}
               </p>
               <Button size="sm" className="mt-2" asChild>
                 <Link to="/events/$eventId" params={{ eventId: sel.e.id }}>
@@ -136,7 +178,12 @@ function MapPage() {
                 </Link>
               </Button>
             </div>
-            <Button size="icon" variant="ghost" onClick={() => setSelected(null)} aria-label="Close">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setSelected(null)}
+              aria-label="Close"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>

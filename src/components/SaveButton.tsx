@@ -93,7 +93,11 @@ export function SaveButton({
         toggle.mutate(undefined, {
           onSuccess: (now) =>
             toast.success(
-              now ? (reminder ? "We'll keep this in My BukaLive" : "Saved to My BukaLive") : "Removed",
+              now
+                ? reminder
+                  ? "We'll keep this in My BukaLive"
+                  : "Saved to My BukaLive"
+                : "Removed",
             ),
         });
       }}

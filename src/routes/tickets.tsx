@@ -52,7 +52,12 @@ function Tickets() {
     },
   });
 
-  if (loading) return <div className="mx-auto max-w-4xl px-4 py-10"><Skeleton className="h-40 rounded-2xl" /></div>;
+  if (loading)
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10">
+        <Skeleton className="h-40 rounded-2xl" />
+      </div>
+    );
 
   if (!user) {
     return (
@@ -97,7 +102,10 @@ function Tickets() {
             const event = ticket.event;
             if (!event) {
               return (
-                <div key={ticket.id} className="rounded-2xl border px-5 py-4 text-sm text-muted-foreground">
+                <div
+                  key={ticket.id}
+                  className="rounded-2xl border px-5 py-4 text-sm text-muted-foreground"
+                >
                   This event is no longer available.
                 </div>
               );

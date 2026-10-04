@@ -75,7 +75,9 @@ export function Header() {
                 <DropdownMenuItem onClick={() => navigate({ to: "/tickets" })}>
                   <Ticket className="mr-2 h-4 w-4" aria-hidden /> My tickets
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate({ to: isHost ? "/host" : "/host/apply" })}>
+                <DropdownMenuItem
+                  onClick={() => navigate({ to: isHost ? "/host" : "/host/apply" })}
+                >
                   <LayoutDashboard className="mr-2 h-4 w-4" aria-hidden />
                   {isHost ? "Host dashboard" : "Become a host"}
                 </DropdownMenuItem>

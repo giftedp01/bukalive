@@ -18,7 +18,9 @@ import { Button } from "@/components/ui/button";
 import { createStreamIngress, getLiveKitToken } from "@/lib/livekit.functions";
 
 function Stage() {
-  const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], { onlySubscribed: false });
+  const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], {
+    onlySubscribed: false,
+  });
   const track = tracks.find((t) => t.publication?.track);
   if (!track) {
     return (
@@ -33,7 +35,13 @@ function Stage() {
   return <VideoTrack trackRef={track} className="h-full w-full object-contain" />;
 }
 
-function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperienceId?: string | undefined }) {
+function ObsPanel({
+  eventId,
+  subExperienceId,
+}: {
+  eventId: string;
+  subExperienceId?: string | undefined;
+}) {
   const create = useServerFn(createStreamIngress);
   const [info, setInfo] = useState<{ url: string; streamKey: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,11 +51,21 @@ function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperience
       <p className="font-medium">Stream from OBS or other software</p>
       {info ? (
         <div className="mt-3 space-y-2">
-          {([["Server", info.url], ["Stream key", info.streamKey]] as const).map(([label, v]) => (
+          {(
+            [
+              ["Server", info.url],
+              ["Stream key", info.streamKey],
+            ] as const
+          ).map(([label, v]) => (
             <div key={label} className="flex items-center gap-2">
               <span className="w-24 text-muted-foreground">{label}</span>
               <code className="flex-1 truncate rounded bg-muted px-2 py-1">{v}</code>
-              <Button size="icon" variant="ghost" onClick={() => copy(v)} aria-label={`Copy ${label}`}>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => copy(v)}
+                aria-label={`Copy ${label}`}
+              >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
@@ -76,7 +94,13 @@ function ObsPanel({ eventId, subExperienceId }: { eventId: string; subExperience
   );
 }
 
-export default function LivePlayer({ eventId, subExperienceId }: { eventId: string; subExperienceId?: string | undefined }) {
+export default function LivePlayer({
+  eventId,
+  subExperienceId,
+}: {
+  eventId: string;
+  subExperienceId?: string | undefined;
+}) {
   const getToken = useServerFn(getLiveKitToken);
   const { data, error } = useQuery({
     queryKey: ["livekit-token", eventId, subExperienceId],
@@ -89,11 +113,20 @@ export default function LivePlayer({ eventId, subExperienceId }: { eventId: stri
     <div className="space-y-3">
       <div className="aspect-video w-full overflow-hidden rounded-3xl bg-sunset text-primary-foreground">
         {error ? (
-          <div className="grid h-full place-items-center px-6 text-center">Could not connect to the stream.</div>
+          <div className="grid h-full place-items-center px-6 text-center">
+            Could not connect to the stream.
+          </div>
         ) : !data ? (
           <div className="grid h-full place-items-center">Connecting…</div>
         ) : (
-          <LiveKitRoom serverUrl={data.url} token={data.token} connect video={false} audio={false} className="relative h-full">
+          <LiveKitRoom
+            serverUrl={data.url}
+            token={data.token}
+            connect
+            video={false}
+            audio={false}
+            className="relative h-full"
+          >
             <Stage />
             <RoomAudioRenderer />
             <StartAudio label="Tap to enable sound" className="absolute bottom-3 left-3" />

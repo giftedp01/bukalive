@@ -39,7 +39,13 @@ const COLORS: Record<MapMarker["kind"], string> = {
   destination: "#1f6f68",
 };
 
-export function WorldMap({ markers, onSelect }: { markers: MapMarker[]; onSelect: (id: string) => void }) {
+export function WorldMap({
+  markers,
+  onSelect,
+}: {
+  markers: MapMarker[];
+  onSelect: (id: string) => void;
+}) {
   const el = useRef<HTMLDivElement | null>(null);
   const map = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const pins = useRef<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any

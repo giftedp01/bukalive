@@ -42,6 +42,10 @@ type ChatMessage = {
   user_id: string;
   message: string;
   sent_at: string;
+  is_question: boolean;
+  answer: string | null;
+  answered_at: string | null;
+  answered_by: string | null;
 };
 
 function Gate({ title, children }: { title: string; children: React.ReactNode }) {
@@ -56,10 +60,11 @@ function Gate({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-function ChatPanel({ eventId }: { eventId: string }) {
+function ChatPanel({ eventId, isHost }: { eventId: string; isHost: boolean }) {
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const { data: messages } = useQuery({
@@ -81,7 +86,22 @@ function ChatPanel({ eventId }: { eventId: string }) {
       .channel(`chat-${eventId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_messages", filter: `event_id=eq.${eventId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+          filter: `event_id=eq.${eventId}`,
+        },
+        () => queryClient.invalidateQueries({ queryKey: ["chat", eventId] }),
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chat_messages",
+          filter: `event_id=eq.${eventId}`,
+        },
         () => queryClient.invalidateQueries({ queryKey: ["chat", eventId] }),
       )
       .subscribe();
@@ -93,6 +113,67 @@ function ChatPanel({ eventId }: { eventId: string }) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages?.length]);
+
+  const updateMessage = async (messageId: string, updates: Partial<ChatMessage>) => {
+    const { error } = await supabase.from("chat_messages").update(updates).eq("id", messageId);
+    if (error) {
+      toast.error("Could not update the question");
+      return false;
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["chat", eventId] });
+    return true;
+  };
+
+  const toggleQuestion = async (message: ChatMessage) => {
+    if (!user) return;
+    const nextValue = !message.is_question;
+    const ok = await updateMessage(message.id, {
+      is_question: nextValue,
+      answer: null,
+      answered_at: null,
+      answered_by: null,
+    });
+
+    if (ok && nextValue) {
+      toast.success("Question flagged for the host");
+    }
+  };
+
+  const answerQuestion = async (message: ChatMessage) => {
+    if (!user || !isHost) return;
+    const answer = (answerDrafts[message.id] ?? message.answer ?? "").trim();
+    if (!answer) {
+      toast.error("Write an answer before sending it");
+      return;
+    }
+
+    const ok = await updateMessage(message.id, {
+      is_question: true,
+      answer,
+      answered_at: new Date().toISOString(),
+      answered_by: user.id,
+    });
+
+    if (ok) {
+      setAnswerDrafts((current) => ({ ...current, [message.id]: "" }));
+      toast.success("Answer sent");
+    }
+  };
+
+  const clearQuestion = async (message: ChatMessage) => {
+    if (!user) return;
+    const ok = await updateMessage(message.id, {
+      is_question: false,
+      answer: null,
+      answered_at: null,
+      answered_by: null,
+    });
+
+    if (ok) {
+      toast.success("Question resolved");
+    }
+  };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,17 +202,75 @@ function ChatPanel({ eventId }: { eventId: string }) {
           <p className="text-sm text-muted-foreground">No messages yet — start the conversation.</p>
         ) : (
           (messages ?? []).map((message) => (
-            <div key={message.id} className="text-sm">
-              <span className="font-medium">
-                {message.user_id === user?.id ? profile?.full_name || "You" : "Viewer"}
-              </span>
-              <span className="ml-2 text-xs text-muted-foreground">
-                {new Date(message.sent_at).toLocaleTimeString(undefined, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-              <p className="text-muted-foreground">{message.message}</p>
+            <div key={message.id} className="rounded-xl border p-3 text-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="font-medium">
+                    {message.user_id === user?.id ? profile?.full_name || "You" : "Viewer"}
+                  </span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    {new Date(message.sent_at).toLocaleTimeString(undefined, {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                {!isHost && user && (
+                  <button
+                    type="button"
+                    onClick={() => toggleQuestion(message)}
+                    className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    {message.is_question ? "Unflag" : "Question"}
+                  </button>
+                )}
+              </div>
+
+              <p className="mt-2 whitespace-pre-wrap text-muted-foreground">{message.message}</p>
+
+              {message.is_question && (
+                <div className="mt-2 rounded-lg bg-sand px-2.5 py-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-sand-foreground">Question flagged</span>
+                    {isHost && (
+                      <button
+                        type="button"
+                        onClick={() => clearQuestion(message)}
+                        className="text-[11px] text-primary underline-offset-2 hover:underline"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+
+                  {message.answer ? (
+                    <div className="mt-2 rounded-md bg-background/70 p-2 text-left text-muted-foreground">
+                      <p className="font-medium text-foreground">Host reply</p>
+                      <p className="mt-1 whitespace-pre-wrap">{message.answer}</p>
+                    </div>
+                  ) : isHost ? (
+                    <div className="mt-2 space-y-2">
+                      <textarea
+                        value={answerDrafts[message.id] ?? ""}
+                        onChange={(event) =>
+                          setAnswerDrafts((current) => ({
+                            ...current,
+                            [message.id]: event.target.value,
+                          }))
+                        }
+                        rows={3}
+                        className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground outline-none ring-0 placeholder:text-muted-foreground"
+                        placeholder="Reply to the question…"
+                      />
+                      <Button type="button" size="sm" onClick={() => answerQuestion(message)}>
+                        Mark as answered
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-muted-foreground">The host is preparing a reply.</p>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
@@ -160,7 +299,11 @@ function WatchPage() {
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select("*").eq("id", eventId).maybeSingle();
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", eventId)
+        .maybeSingle();
       if (error) throw error;
       return (data as BukaEvent | null) ?? null;
     },
@@ -264,7 +407,7 @@ function WatchPage() {
           <AdSlot placement="watch-sidebar" />
         </div>
 
-        <ChatPanel eventId={event.id} />
+        <ChatPanel eventId={event.id} isHost={isHostOfEvent} />
       </div>
     </div>
   );

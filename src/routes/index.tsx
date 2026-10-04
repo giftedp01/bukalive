@@ -28,7 +28,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "BukaLive — Explore the world live" },
       {
         property: "og:description",
-        content: "Watch the world live, discover destinations and book the experience. Then go there.",
+        content:
+          "Watch the world live, discover destinations and book the experience. Then go there.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -37,7 +38,13 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const EXAMPLES = ["Kruger National Park", "Safari in Kenya", "Kyoto", "Whale watching", "Marrakech food"];
+const EXAMPLES = [
+  "Kruger National Park",
+  "Safari in Kenya",
+  "Kyoto",
+  "Whale watching",
+  "Marrakech food",
+];
 
 function useAllEvents() {
   return useQuery({
@@ -91,14 +98,23 @@ function Row({
           ))}
         </div>
       ) : events.length === 0 ? (
-        <p className="rounded-2xl bg-muted px-5 py-8 text-center text-sm text-muted-foreground">{empty}</p>
+        <p className="rounded-2xl bg-muted px-5 py-8 text-center text-sm text-muted-foreground">
+          {empty}
+        </p>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {events.map((event) => (
             <div key={event.id} className="space-y-2">
               <EventCard event={event} />
               {eventPhase(event) === "upcoming" && (
-                <SaveButton itemType="experience" itemId={event.id} reminder size="sm" variant="outline" className="w-full" />
+                <SaveButton
+                  itemType="experience"
+                  itemId={event.id}
+                  reminder
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                />
               )}
             </div>
           ))}
@@ -114,14 +130,17 @@ function Home() {
   const { data: events = [], isLoading } = useAllEvents();
   const { data: destinations = [] } = useQuery(destinationsQuery);
 
-  const live = events.filter((e) => eventPhase(e) === "live").sort((a, b) => (b.viewer_count ?? 0) - (a.viewer_count ?? 0));
+  const live = events
+    .filter((e) => eventPhase(e) === "live")
+    .sort((a, b) => (b.viewer_count ?? 0) - (a.viewer_count ?? 0));
   const soon = events.filter((e) => eventPhase(e) === "upcoming").slice(0, 8);
   const popular = [...events]
     .sort((a, b) => (b.viewer_count ?? 0) + b.view_count - ((a.viewer_count ?? 0) + a.view_count))
     .slice(0, 4);
   const featured = destinations.filter((d) => d.is_featured).slice(0, 6);
 
-  const submit = (value: string) => navigate({ to: "/browse", search: { q: value.trim() || undefined } });
+  const submit = (value: string) =>
+    navigate({ to: "/browse", search: { q: value.trim() || undefined } });
 
   return (
     <div>
@@ -138,7 +157,8 @@ function Home() {
         <div className="relative mx-auto w-full max-w-6xl px-4 pb-16 pt-20 sm:pb-24 sm:pt-32">
           {live.length > 0 && (
             <span className="inline-flex items-center gap-2 rounded-full bg-background/90 px-3 py-1 text-xs font-medium">
-              <span className="live-dot" aria-hidden /> {live.length} experiences live around the world
+              <span className="live-dot" aria-hidden /> {live.length} experiences live around the
+              world
             </span>
           )}
           <h1 className="mt-5 max-w-3xl font-display text-5xl leading-[1.05] text-primary-foreground sm:text-7xl">
@@ -164,7 +184,9 @@ function Home() {
               aria-label="Search BukaLive"
               className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
             />
-            <Button type="submit" className="h-11 rounded-full px-5">Search</Button>
+            <Button type="submit" className="h-11 rounded-full px-5">
+              Search
+            </Button>
           </form>
           <div className="mt-3 flex flex-wrap gap-2">
             {EXAMPLES.map((ex) => (
@@ -225,7 +247,9 @@ function Home() {
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
             <h2 className="font-display text-2xl sm:text-3xl">Explore destinations</h2>
-            <p className="text-sm text-muted-foreground">A few places to start — BukaLive works anywhere in the world</p>
+            <p className="text-sm text-muted-foreground">
+              A few places to start — BukaLive works anywhere in the world
+            </p>
           </div>
           <Button variant="ghost" asChild>
             <Link to="/destinations">
@@ -251,7 +275,9 @@ function Home() {
               />
               <div className="absolute inset-0 bg-scrim" aria-hidden />
               <div className="absolute bottom-4 left-4 right-4 text-primary-foreground">
-                <p className="text-xs uppercase tracking-widest opacity-90">{countryName(d.country_id)}</p>
+                <p className="text-xs uppercase tracking-widest opacity-90">
+                  {countryName(d.country_id)}
+                </p>
                 <p className="font-display text-2xl">{d.name}</p>
                 <p className="line-clamp-1 text-sm opacity-90">{d.summary}</p>
               </div>
@@ -270,7 +296,9 @@ function Home() {
 
       <section className="mx-auto w-full max-w-6xl px-4 py-10">
         <h2 className="font-display text-2xl sm:text-3xl">Discover the world</h2>
-        <p className="mb-6 text-sm text-muted-foreground">Every dot is a destination with live or recorded experiences. Tap one to go there.</p>
+        <p className="mb-6 text-sm text-muted-foreground">
+          Every dot is a destination with live or recorded experiences. Tap one to go there.
+        </p>
         <WorldTeaser destinations={destinations} events={events} />
       </section>
 

@@ -13,9 +13,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { ExperienceJourney } from "@/components/ExperienceJourney";
-import { purchaseAccess } from "@/lib/purchases.functions";
-import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
 import {
   categoryLabel,
   eventPhase,
@@ -53,7 +50,11 @@ function EventDetail() {
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", eventId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("events").select(EVENT_SELECT).eq("id", eventId).maybeSingle();
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", eventId)
+        .maybeSingle();
       if (error) throw error;
       if (!data) return null;
       const raw = (data as { sub_experiences?: unknown }).sub_experiences;
@@ -69,7 +70,7 @@ function EventDetail() {
     enabled: !!event?.host_id,
     queryFn: async () => {
       const { data } = await supabase
-        .from("public_profiles")
+        .from("profiles")
         .select("full_name, bio, host_bio, avatar_url")
         .eq("id", event!.host_id)
         .maybeSingle();
@@ -94,8 +95,17 @@ function EventDetail() {
   const buy = useMutation({
     mutationFn: async () => {
       if (!user || !event) throw new Error("Please sign in first");
-      // MOCK PAYMENT: recorded server-side at the stored event price.
-      await purchaseAccess({ data: { eventId: event.id } });
+      // MOCK PAYMENT: a real provider (Stripe/Paddle) charges here and the
+      // purchase row is written after a confirmed payment webhook.
+      const { error } = await supabase.from("purchases").insert({
+        event_id: event.id,
+        viewer_id: user.id,
+        amount_cents: event.price_cents,
+        currency: event.currency,
+        provider: "mock",
+        provider_ref: `mock_${crypto.randomUUID()}`,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Access unlocked — find it under My tickets");
@@ -133,7 +143,11 @@ function EventDetail() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="relative overflow-hidden rounded-3xl">
-        <EventCover event={event} />
+        <CoverImage
+          path={event.cover_image_url}
+          alt={event.title}
+          className="h-72 w-full sm:h-96"
+        />
         <div className="absolute inset-0 bg-scrim" aria-hidden />
         <div className="absolute bottom-5 left-5 right-5 text-primary-foreground">
           <div className="mb-3 flex flex-wrap gap-2">
@@ -166,19 +180,14 @@ function EventDetail() {
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <section>
-            <h2 className="font-display text-xl">About this experience</h2>
+            <h2 className="font-display text-xl">About this broadcast</h2>
             <p className="mt-2 whitespace-pre-line text-muted-foreground">
               {event.description || "The host hasn't added a description yet."}
             </p>
           </section>
 
-          <ExperienceJourney event={event} />
-
           {event.subExperiences && event.subExperiences.length > 0 && (
-            <SubExperienceList
-              subExperiences={event.subExperiences}
-              eventId={event.id}
-            />
+            <SubExperienceList subExperiences={event.subExperiences} eventId={event.id} />
           )}
 
           <section>
@@ -189,9 +198,9 @@ function EventDetail() {
                   <Radio className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
-                  <p className="font-medium">{event.business?.name || host?.full_name || "BukaLive host"}</p>
+                  <p className="font-medium">{host?.full_name || "BukaLive host"}</p>
                   <p className="text-sm text-muted-foreground">
-                    {event.business ? event.business.is_sample ? "Sample business shown for demonstration." : "" : host?.host_bio || host?.bio || "BukaLive host."}
+                    {host?.host_bio || host?.bio || "Verified BukaLive host."}
                   </p>
                 </div>
               </CardContent>
@@ -224,7 +233,11 @@ function EventDetail() {
                 </Button>
               ) : owned ? (
                 <div className="space-y-2">
-                  <Button className="w-full" disabled={!isWatchable(event)} asChild={isWatchable(event)}>
+                  <Button
+                    className="w-full"
+                    disabled={!isWatchable(event)}
+                    asChild={isWatchable(event)}
+                  >
                     {isWatchable(event) ? (
                       <Link to="/watch/$eventId" params={{ eventId: event.id }}>
                         <Radio className="mr-2 h-4 w-4" aria-hidden /> Go to watch page
@@ -263,13 +276,5 @@ function EventDetail() {
         </aside>
       </div>
     </div>
-  );
-}
-
-function EventCover({ event }: { event: BukaEvent }) {
-  const { data: destinations } = useQuery(destinationsQuery);
-  const d = destinations?.find((x) => x.slug === event.destination_id);
-  return (
-    <CoverImage path={event.cover_image_url} fallback={destinationImage(d)} eager alt={event.title} className="h-72 w-full sm:h-96" />
   );
 }

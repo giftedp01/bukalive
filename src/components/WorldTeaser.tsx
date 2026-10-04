@@ -25,8 +25,7 @@ export function WorldTeaser({
       <div
         className="absolute inset-0 opacity-30"
         style={{
-          backgroundImage:
-            "radial-gradient(circle, var(--background) 1px, transparent 1.4px)",
+          backgroundImage: "radial-gradient(circle, var(--background) 1px, transparent 1.4px)",
           backgroundSize: "14px 14px",
         }}
         aria-hidden
@@ -49,9 +48,14 @@ export function WorldTeaser({
               aria-label={`${d.name}${status === "live" ? " — live now" : ""}`}
             >
               {status === "live" && (
-                <span className={`absolute inset-0 animate-ping rounded-full ${color} opacity-60`} aria-hidden />
+                <span
+                  className={`absolute inset-0 animate-ping rounded-full ${color} opacity-60`}
+                  aria-hidden
+                />
               )}
-              <span className={`relative block h-3 w-3 rounded-full ring-2 ring-background ${color}`} />
+              <span
+                className={`relative block h-3 w-3 rounded-full ring-2 ring-background ${color}`}
+              />
               <span className="pointer-events-none absolute left-1/2 top-5 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-background px-2 py-1 text-xs font-medium text-foreground shadow-soft group-hover:block group-focus:block">
                 {d.name}
               </span>
@@ -59,9 +63,15 @@ export function WorldTeaser({
           );
         })}
       <div className="absolute bottom-3 left-3 flex flex-wrap gap-3 rounded-full bg-background/90 px-3 py-1.5 text-xs">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-live" /> Live now</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Starting soon</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-accent" /> Recorded</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-live" /> Live now
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-primary" /> Starting soon
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-accent" /> Recorded
+        </span>
       </div>
     </div>
   );

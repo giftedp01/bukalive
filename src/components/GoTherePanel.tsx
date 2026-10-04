@@ -6,7 +6,13 @@ import { SampleBadge } from "@/components/TrustBadges";
 import { LISTING_KINDS, listingsQuery } from "@/lib/destinations";
 
 /** The "Go There" journey: everything around a destination, grouped by need. */
-export function GoTherePanel({ destinationSlug, bookUrl }: { destinationSlug: string; bookUrl?: string | null | undefined }) {
+export function GoTherePanel({
+  destinationSlug,
+  bookUrl,
+}: {
+  destinationSlug: string;
+  bookUrl?: string | null | undefined;
+}) {
   const { data: listings = [], isLoading } = useQuery(listingsQuery(destinationSlug));
 
   return (
@@ -35,7 +41,12 @@ export function GoTherePanel({ destinationSlug, bookUrl }: { destinationSlug: st
                   <p className="mt-1 text-sm text-muted-foreground">{l.summary}</p>
                   {l.price_from && <p className="mt-1 text-xs font-medium">{l.price_from}</p>}
                   {l.url && (
-                    <a href={l.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary"
+                    >
                       View <ExternalLink className="h-3.5 w-3.5" aria-hidden />
                     </a>
                   )}
@@ -54,11 +65,20 @@ export function GoTherePanel({ destinationSlug, bookUrl }: { destinationSlug: st
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {bookUrl && (
-            <a href={bookUrl} target="_blank" rel="noopener noreferrer" className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+            <a
+              href={bookUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            >
               Book with provider
             </a>
           )}
-          <Link to="/destinations/$slug" params={{ slug: destinationSlug }} className="rounded-full bg-background px-4 py-2 text-sm font-medium text-foreground">
+          <Link
+            to="/destinations/$slug"
+            params={{ slug: destinationSlug }}
+            className="rounded-full bg-background px-4 py-2 text-sm font-medium text-foreground"
+          >
             Explore the destination
           </Link>
         </div>

@@ -11,7 +11,13 @@ const LABELS: Partial<Record<VerificationStatus, string>> = {
 };
 
 /** Only renders for admin-verified statuses. Never shown for pending/none. */
-export function VerifiedBadge({ status, compact }: { status?: VerificationStatus | null; compact?: boolean }) {
+export function VerifiedBadge({
+  status,
+  compact,
+}: {
+  status?: VerificationStatus | null;
+  compact?: boolean;
+}) {
   const label = status ? LABELS[status] : undefined;
   if (!label) return null;
   return (
@@ -24,7 +30,11 @@ export function VerifiedBadge({ status, compact }: { status?: VerificationStatus
 
 export function SampleBadge() {
   return (
-    <Badge variant="outline" className="gap-1 bg-background/90 text-foreground" title="Demo content — not a real listing">
+    <Badge
+      variant="outline"
+      className="gap-1 bg-background/90 text-foreground"
+      title="Demo content — not a real listing"
+    >
       <FlaskConical className="h-3 w-3" aria-hidden /> Sample
     </Badge>
   );
