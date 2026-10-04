@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, MapPin, MessageCircle, PlayCircle, TicketCheck } from "lucide-react";
+import { Eye, MapPin, MessageCircle, PlayCircle, Ticket, TicketCheck } from "lucide-react";
 
 import { CoverImage } from "@/components/CoverImage";
 import { Countdown } from "@/components/Countdown";
@@ -31,7 +31,7 @@ export function EventCard({
   const phase = eventPhase(event);
   const { user } = useAuth();
   const { data: destinations } = useQuery(destinationsQuery);
-  const { data: ownsTicket = false } = useQuery({
+  const { data: ownsTicket, isLoading: ticketStatusLoading } = useQuery({
     queryKey: ["purchase", event.id, user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -82,11 +82,6 @@ export function EventCard({
                 <Eye className="h-3 w-3" aria-hidden /> {event.viewer_count} watching
               </Badge>
             )}
-            {ownsTicket && (
-              <Badge variant="secondary" className="gap-1">
-                <TicketCheck className="h-3.5 w-3.5" aria-hidden /> Ticket owned
-              </Badge>
-            )}
             {event.is_sample && <SampleBadge />}
           </div>
           <div className="absolute bottom-3 left-3 right-3 text-primary-foreground">
@@ -127,7 +122,36 @@ export function EventCard({
       </Link>
 
       <div className="flex items-center justify-between border-t px-3 py-2">
-        <SaveButton itemType="experience" itemId={event.id} like size="sm" variant="ghost" />
+        <div className="flex min-w-0 items-center gap-1">
+          <SaveButton itemType="experience" itemId={event.id} like size="sm" variant="ghost" />
+          {(!user || !ticketStatusLoading) && (ownsTicket || phase !== "ended") && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className={
+                ownsTicket
+                  ? "h-8 gap-1 px-2 text-green-800 hover:bg-green-100 hover:text-green-900 dark:text-green-300 dark:hover:bg-green-950/40"
+                  : "h-8 gap-1 px-2 bg-red-50 text-red-800 hover:bg-red-100 hover:text-red-900 dark:bg-red-950/30 dark:text-red-300 dark:hover:bg-red-950/50"
+              }
+              asChild
+            >
+              <Link
+                to={ownsTicket && isWatchable(event) ? "/watch/$eventId" : destinationPath}
+                params={{ eventId: event.id }}
+                aria-label={
+                  ownsTicket ? `Ticket owned for ${event.title}` : `Get a ticket for ${event.title}`
+                }
+              >
+                {ownsTicket ? (
+                  <TicketCheck className="h-4 w-4" aria-hidden />
+                ) : (
+                  <Ticket className="h-4 w-4" aria-hidden />
+                )}
+                <span>{ownsTicket ? "Ticket owned" : "Get ticket"}</span>
+              </Link>
+            </Button>
+          )}
+        </div>
         {phase !== "ended" && (
           <Button variant="ghost" size="sm" asChild>
             <Link
