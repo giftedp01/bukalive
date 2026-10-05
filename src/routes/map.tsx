@@ -11,8 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CoverImage } from "@/components/CoverImage";
 import { supabase } from "@/integrations/supabase/client";
 import { countryName } from "@/data/countries";
+import { TOURISM_CATEGORIES as CATEGORIES } from "@/data/categories";
 import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
-import { CATEGORIES, eventPhase, formatWhen, type BukaEvent } from "@/lib/buka";
+import { eventPhase, formatWhen, type BukaEvent } from "@/lib/buka";
 import type { MapMarker } from "@/components/WorldMap";
 
 const WorldMap = lazy(() => import("@/components/WorldMap").then((m) => ({ default: m.WorldMap })));
