@@ -36,7 +36,7 @@ type Props = {
 export function ReportButton({ itemType, itemId, label = "Report", compact }: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState(REASONS[0]);
+  const [reason, setReason] = useState<string>("Misleading or fake listing");
   const [details, setDetails] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -51,7 +51,7 @@ export function ReportButton({ itemType, itemId, label = "Report", compact }: Pr
       details: details.slice(0, 1000),
     });
     setBusy(false);
-    if (error) return toast.error("Report not sent");
+    if (error) { toast.error("Report not sent"); return; }
     toast.success("Thanks — our team will review this.");
     setOpen(false);
     setDetails("");

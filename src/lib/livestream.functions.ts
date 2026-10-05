@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const payLivestreamRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data) => z.object({ requestId: z.string().uuid() }).parse(data))
+  .inputValidator((data) => z.object({ requestId: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: request, error } = await context.supabase
       .from("livestream_requests")
