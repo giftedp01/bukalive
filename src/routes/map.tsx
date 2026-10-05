@@ -12,7 +12,6 @@ import { CoverImage } from "@/components/CoverImage";
 import { supabase } from "@/integrations/supabase/client";
 import { countryName } from "@/data/countries";
 import { TOURISM_CATEGORIES as CATEGORIES } from "@/data/categories";
-import { TOURISM_CATEGORIES as CATEGORIES } from "@/data/categories";
 import { destinationImage, destinationsQuery, EVENT_SELECT } from "@/lib/destinations";
 import { eventPhase, formatWhen, type BukaEvent } from "@/lib/buka";
 import type { MapMarker } from "@/components/WorldMap";
