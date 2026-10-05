@@ -129,7 +129,9 @@ export type Database = {
       }
       chat_messages: {
         Row: {
+          answer: string | null
           answered_at: string | null
+          answered_by: string | null
           event_id: string
           id: string
           is_question: boolean
@@ -138,7 +140,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          answer?: string | null
           answered_at?: string | null
+          answered_by?: string | null
           event_id: string
           id?: string
           is_question?: boolean
@@ -147,7 +151,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          answer?: string | null
           answered_at?: string | null
+          answered_by?: string | null
           event_id?: string
           id?: string
           is_question?: boolean
@@ -231,6 +237,7 @@ export type Database = {
       events: {
         Row: {
           book_url: string | null
+          booking_url: string | null
           business_id: string | null
           category: Database["public"]["Enums"]["event_category"]
           category_id: string | null
@@ -266,6 +273,7 @@ export type Database = {
         }
         Insert: {
           book_url?: string | null
+          booking_url?: string | null
           business_id?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
@@ -301,6 +309,7 @@ export type Database = {
         }
         Update: {
           book_url?: string | null
+          booking_url?: string | null
           business_id?: string | null
           category?: Database["public"]["Enums"]["event_category"]
           category_id?: string | null
@@ -352,6 +361,7 @@ export type Database = {
           id: string
           is_sample: boolean
           kind: string
+          link_url: string | null
           name: string
           price_from: string | null
           summary: string
@@ -364,6 +374,7 @@ export type Database = {
           id?: string
           is_sample?: boolean
           kind: string
+          link_url?: string | null
           name: string
           price_from?: string | null
           summary?: string
@@ -376,6 +387,7 @@ export type Database = {
           id?: string
           is_sample?: boolean
           kind?: string
+          link_url?: string | null
           name?: string
           price_from?: string | null
           summary?: string
@@ -387,6 +399,69 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      livestream_requests: {
+        Row: {
+          approved_budget_cents: number | null
+          created_at: string
+          description: string
+          format: string
+          id: string
+          location: string
+          paid_at: string | null
+          payment_status: string
+          preferred_date: string | null
+          rejection_reason: string | null
+          requested_budget_cents: number
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          approved_budget_cents?: number | null
+          created_at?: string
+          description: string
+          format: string
+          id?: string
+          location: string
+          paid_at?: string | null
+          payment_status?: string
+          preferred_date?: string | null
+          rejection_reason?: string | null
+          requested_budget_cents?: number
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          approved_budget_cents?: number | null
+          created_at?: string
+          description?: string
+          format?: string
+          id?: string
+          location?: string
+          paid_at?: string | null
+          payment_status?: string
+          preferred_date?: string | null
+          rejection_reason?: string | null
+          requested_budget_cents?: number
+          requester_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "livestream_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "livestream_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -502,7 +577,22 @@ export type Database = {
           reporter_id?: string
           status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reports_reporter_profile_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_profile_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saves: {
         Row: {
