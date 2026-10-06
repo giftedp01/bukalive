@@ -9,7 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { eventPhase, formatPrice, formatWhen, isWatchable, type BukaEvent } from "@/lib/buka";
+import {
+  eventPhase,
+  formatEventWhen,
+  formatPrice,
+  formatWhen,
+  isWatchable,
+  type BukaEvent,
+} from "@/lib/buka";
 
 export const Route = createFileRoute("/tickets")({
   head: () => ({
@@ -166,7 +173,7 @@ function Tickets() {
                             <Badge variant="secondary">Saved</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {formatWhen(event.scheduled_at)} · {event.location || "Online"}
+                            {formatEventWhen(event)} · {event.location || "Online"}
                           </p>
                         </div>
                         <Button size="sm" asChild>
@@ -274,7 +281,7 @@ function Tickets() {
                         {phase === "ended" && <Badge variant="secondary">Ended</Badge>}
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        {formatWhen(event.scheduled_at)} · {event.location || "Online"}
+                        {formatEventWhen(event)} · {event.location || "Online"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         Paid {formatPrice(ticket.amount_cents, ticket.currency)} on{" "}

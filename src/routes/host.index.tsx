@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { eventPhase, formatPrice, formatWhen, type BukaEvent } from "@/lib/buka";
+import { eventPhase, formatEventWhen, formatPrice, type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/host/")({
   head: () => ({
@@ -233,7 +233,7 @@ function HostDashboard() {
                       {phase}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{formatWhen(event.scheduled_at)}</p>
+                  <p className="text-sm text-muted-foreground">{formatEventWhen(event)}</p>
                   <p className="text-xs text-muted-foreground">
                     {stat?.count ?? 0} ticket{(stat?.count ?? 0) === 1 ? "" : "s"} ·{" "}
                     {formatPrice(stat?.cents ?? 0)} · {eventEngagement} engagement actions ·{" "}

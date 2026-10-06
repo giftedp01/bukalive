@@ -24,8 +24,8 @@ import { purchaseAccess } from "@/lib/purchases.functions";
 import {
   categoryLabel,
   eventPhase,
+  formatEventWhen,
   formatPrice,
-  formatWhen,
   isWatchable,
   type BukaEvent,
 } from "@/lib/buka";
@@ -273,7 +273,7 @@ function EventDetail() {
               <MapPin className="h-4 w-4" aria-hidden /> {event.location || "Online"}
             </span>
             <span className="inline-flex items-center gap-1">
-              <CalendarClock className="h-4 w-4" aria-hidden /> {formatWhen(event.scheduled_at)}
+              <CalendarClock className="h-4 w-4" aria-hidden /> {formatEventWhen(event)}
             </span>
             <span className="inline-flex items-center gap-1">
               <Clock className="h-4 w-4" aria-hidden /> {event.duration_minutes} min
@@ -365,7 +365,7 @@ function EventDetail() {
                         <p className="text-xs text-muted-foreground">
                           {recommendation.location || "Online"}
                           {" · "}
-                          {formatWhen(recommendation.scheduled_at)}
+                          {formatEventWhen(recommendation)}
                         </p>
                       </div>
                     </div>
