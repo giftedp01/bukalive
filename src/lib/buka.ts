@@ -121,6 +121,11 @@ export function formatWhen(iso: string) {
   });
 }
 
+/** Live experiences always display the viewer's current date and time. */
+export function formatEventWhen(event: BukaEvent) {
+  return formatWhen(eventPhase(event) === "live" ? new Date().toISOString() : event.scheduled_at);
+}
+
 export function endsAt(event: Pick<BukaEvent, "scheduled_at" | "duration_minutes">) {
   return new Date(new Date(event.scheduled_at).getTime() + event.duration_minutes * 60_000);
 }

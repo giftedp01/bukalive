@@ -12,8 +12,8 @@ import { countryName } from "@/data/countries";
 import {
   categoryLabel,
   eventPhase,
+  formatEventWhen,
   formatPrice,
-  formatWhen,
   isWatchable,
   type BukaEvent,
 } from "@/lib/buka";
@@ -112,7 +112,7 @@ export function EventCard({
             </div>
           )}
           <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-            <span>{formatWhen(event.scheduled_at)}</span>
+            <span>{formatEventWhen(event)}</span>
             {phase === "upcoming" ? (
               <Countdown target={event.scheduled_at} compact={compactCountdown} />
             ) : (

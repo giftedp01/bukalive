@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { categoryLabel, formatPrice, formatWhen, type BukaEvent } from "@/lib/buka";
+import { categoryLabel, formatEventWhen, formatPrice, type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -387,7 +387,7 @@ function AdminPage() {
                     {!event.is_published && <Badge variant="outline">Unpublished</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {formatWhen(event.scheduled_at)} ·{" "}
+                    {formatEventWhen(event)} ·{" "}
                     {formatPrice(event.price_cents, event.currency)}
                   </p>
                 </div>

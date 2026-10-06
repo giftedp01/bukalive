@@ -12,7 +12,7 @@ import { CoverImage } from "@/components/CoverImage";
 import { SampleBadge } from "@/components/TrustBadges";
 import { supabase } from "@/integrations/supabase/client";
 import { TOURISM_CATEGORIES } from "@/data/categories";
-import { eventPhase, formatPrice, formatWhen, type BukaEvent } from "@/lib/buka";
+import { eventPhase, formatEventWhen, formatPrice, formatWhen, type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/ai")({
   head: () => ({
@@ -362,7 +362,7 @@ function AiPage() {
                               <MapPin className="h-3.5 w-3.5" aria-hidden />
                               {event.location || "Online"}
                             </span>
-                            <span>{formatWhen(event.scheduled_at)}</span>
+                            <span>{formatEventWhen(event)}</span>
                           </div>
 
                           <p className="mt-2 text-sm text-muted-foreground">{event.description}</p>
