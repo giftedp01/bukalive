@@ -182,12 +182,13 @@ function HostDashboard() {
         </Button>
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
           { label: "Events", value: String(list.length) },
           { label: "Tickets sold", value: String(totalTickets) },
           { label: "Gross revenue", value: formatPrice(totalCents) },
-          { label: "Engagement", value: String(totalEngagement) },
+          { label: "Total views", value: String(totalViews) },
+          { label: "Booking clicks", value: String(totalBookings) },
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="pt-6">
@@ -222,11 +223,13 @@ function HostDashboard() {
             const stat = sales?.get(event.id);
             const stats = engagement?.get(event.id) ?? {
               views: 0,
+              uniqueViewers: new Set<string>(),
               saves: 0,
               shares: 0,
               bookings: 0,
+              goThere: 0,
             };
-            const eventEngagement = stats.views + stats.saves + stats.shares + stats.bookings;
+
 
             return (
               <div
