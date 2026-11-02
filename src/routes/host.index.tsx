@@ -160,10 +160,11 @@ function HostDashboard() {
   const list = events ?? [];
   const totalCents = list.reduce((sum, event) => sum + (sales?.get(event.id)?.cents ?? 0), 0);
   const totalTickets = list.reduce((sum, event) => sum + (sales?.get(event.id)?.count ?? 0), 0);
-  const totalEngagement = list.reduce((sum, event) => {
-    const stats = engagement?.get(event.id) ?? { views: 0, saves: 0, shares: 0, bookings: 0 };
-    return sum + stats.views + stats.saves + stats.shares + stats.bookings;
-  }, 0);
+  const totalViews = list.reduce((sum, event) => sum + (engagement?.get(event.id)?.views ?? 0), 0);
+  const totalBookings = list.reduce(
+    (sum, event) => sum + (engagement?.get(event.id)?.bookings ?? 0),
+    0,
+  );
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
