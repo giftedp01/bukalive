@@ -70,24 +70,39 @@ function HostDashboard() {
     queryKey: ["host-engagement", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("analytics_events").select("event_id, kind");
+      const { data, error } = await supabase
+        .from("analytics_events")
+        .select("event_id, kind, user_id");
       if (error) throw error;
 
       const totals = new Map<
         string,
-        { views: number; saves: number; shares: number; bookings: number }
+        {
+          views: number;
+          uniqueViewers: Set<string>;
+          saves: number;
+          shares: number;
+          bookings: number;
+          goThere: number;
+        }
       >();
       for (const row of data ?? []) {
         const current = totals.get(row.event_id) ?? {
           views: 0,
+          uniqueViewers: new Set<string>(),
           saves: 0,
           shares: 0,
           bookings: 0,
+          goThere: 0,
         };
-        if (row.kind === "view") current.views += 1;
+        if (row.kind === "view") {
+          current.views += 1;
+          if (row.user_id) current.uniqueViewers.add(row.user_id);
+        }
         if (row.kind === "save") current.saves += 1;
         if (row.kind === "share") current.shares += 1;
         if (row.kind === "booking_click") current.bookings += 1;
+        if (row.kind === "go_there") current.goThere += 1;
         totals.set(row.event_id, current);
       }
       return totals;
