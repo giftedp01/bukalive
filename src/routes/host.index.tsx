@@ -255,8 +255,8 @@ function HostDashboard() {
                   <p className="text-sm text-muted-foreground">{formatEventWhen(event)}</p>
                   <p className="text-xs text-muted-foreground">
                     {stat?.count ?? 0} ticket{(stat?.count ?? 0) === 1 ? "" : "s"} ·{" "}
-                    {formatPrice(stat?.cents ?? 0)} · {eventEngagement} engagement actions ·{" "}
-                    {event.view_count} views
+                    {formatPrice(stat?.cents ?? 0)} · {stats.views} views · {stats.bookings}{" "}
+                    booking clicks
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -287,6 +287,66 @@ function HostDashboard() {
             );
           })}
         </div>
+      )}
+
+      {list.length > 0 && (
+        <>
+          <h2 className="mt-10 font-display text-xl">Analytics</h2>
+          <p className="text-xs text-muted-foreground">
+            Actions viewers took on each experience. Watch-time and peak concurrency aren't tracked
+            yet.
+          </p>
+          <div className="mt-4 overflow-x-auto rounded-2xl border">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead>
+                <tr className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
+                  <th className="px-4 py-3 font-medium">Experience</th>
+                  <th className="px-3 py-3 text-right font-medium">Views</th>
+                  <th className="px-3 py-3 text-right font-medium">Unique viewers</th>
+                  <th className="px-3 py-3 text-right font-medium">Saves</th>
+                  <th className="px-3 py-3 text-right font-medium">Shares</th>
+                  <th className="px-3 py-3 text-right font-medium">Booking clicks</th>
+                  <th className="px-3 py-3 text-right font-medium">Go There</th>
+                  <th className="px-4 py-3 text-right font-medium">Booking conversion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((event) => {
+                  const stats = engagement?.get(event.id) ?? {
+                    views: 0,
+                    uniqueViewers: new Set<string>(),
+                    saves: 0,
+                    shares: 0,
+                    bookings: 0,
+                    goThere: 0,
+                  };
+                  const conversion =
+                    stats.views > 0 ? `${Math.round((stats.bookings / stats.views) * 100)}%` : "—";
+                  return (
+                    <tr key={event.id} className="border-t">
+                      <td className="max-w-[16rem] truncate px-4 py-3">
+                        <Link
+                          to="/events/$eventId"
+                          params={{ eventId: event.id }}
+                          className="hover:underline"
+                        >
+                          {event.title}
+                        </Link>
+                      </td>
+                      <td className="px-3 py-3 text-right">{stats.views}</td>
+                      <td className="px-3 py-3 text-right">{stats.uniqueViewers.size}</td>
+                      <td className="px-3 py-3 text-right">{stats.saves}</td>
+                      <td className="px-3 py-3 text-right">{stats.shares}</td>
+                      <td className="px-3 py-3 text-right">{stats.bookings}</td>
+                      <td className="px-3 py-3 text-right">{stats.goThere}</td>
+                      <td className="px-4 py-3 text-right">{conversion}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
