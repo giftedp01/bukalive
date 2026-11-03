@@ -196,6 +196,20 @@ function AdminPage() {
     queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
   };
 
+  const setVerification = async (business: BusinessRow, status: VerificationStatus) => {
+    const { error } = await supabase
+      .from("businesses")
+      .update({ verification_status: status })
+      .eq("id", business.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${business.name} verification updated`);
+    queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+    queryClient.invalidateQueries({ queryKey: ["business", business.slug] });
+  };
+
   const toggleFlag = async (event: BukaEvent) => {
     const { error } = await supabase
       .from("events")
