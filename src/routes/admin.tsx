@@ -93,6 +93,15 @@ type LivestreamRequestRow = {
   requester: { full_name: string | null; email: string | null } | null;
 };
 
+const VERIFICATION_OPTIONS: { value: VerificationStatus; label: string }[] = [
+  { value: "none", label: "Not verified" },
+  { value: "pending", label: "Pending review" },
+  { value: "verified_business", label: "Verified tourism business" },
+  { value: "verified_guide", label: "Verified guide / operator" },
+  { value: "verified_attraction", label: "Verified attraction" },
+  { value: "tourism_organisation", label: "Tourism organisation" },
+];
+
 function AdminPage() {
   const { isAdmin, loading, user } = useAuth();
   const queryClient = useQueryClient();
