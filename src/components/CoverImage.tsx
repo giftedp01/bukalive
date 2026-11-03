@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Radio } from "lucide-react";
 
-import { supabase } from "@/integrations/supabase/client";
+import { getCoverUrl } from "@/lib/covers.functions";
 import { cn } from "@/lib/utils";
 
 /**
- * Cover images live in the private `event-covers` bucket, so a short-lived
- * signed URL is resolved on demand. Absolute URLs are used as-is.
+ * Cover images live in the private `event-covers` bucket. Signed URLs are
+ * issued by the server only for covers of published, unflagged events (plus
+ * the uploader's own files and admins, which the storage policy allows).
+ * Absolute URLs are used as-is.
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useCoverUrl(path: string | null | undefined) {
@@ -17,8 +19,8 @@ export function useCoverUrl(path: string | null | undefined) {
     queryFn: async () => {
       if (!path) return null;
       if (path.startsWith("http")) return path;
-      const { data } = await supabase.storage.from("event-covers").createSignedUrl(path, 3600);
-      return data?.signedUrl ?? null;
+      const { data } = await getCoverUrl({ data: { path } });
+      return data?.url ?? null;
     },
   });
 }
