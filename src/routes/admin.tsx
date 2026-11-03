@@ -393,8 +393,10 @@ function AdminPage() {
           <TabsTrigger value="hosts">Host applications</TabsTrigger>
           <TabsTrigger value="people">People</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="businesses">Businesses</TabsTrigger>
           <TabsTrigger value="livestream-requests">Livestream requests</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="analytics">Platform analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hosts" className="mt-6 space-y-3">
