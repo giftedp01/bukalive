@@ -51,7 +51,7 @@ export const getCoverUrl = createServerFn({ method: "GET" })
   .inputValidator((data) =>
     z.object({ path: z.string().min(1).max(512) }).parse(data),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<{ url: string | null }> => {
     const path = data.path;
     if (path.startsWith("http")) return { url: path };
     if (path.includes("..") || !OWNER_FOLDER.test(path)) return { url: null };
