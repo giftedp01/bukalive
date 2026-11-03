@@ -372,6 +372,7 @@ function AdminPage() {
     ).length;
   });
   const maxDailyViews = Math.max(1, ...dailyViews);
+  const dailyBars = days.map((day, index) => ({ date: day, views: dailyViews[index] ?? 0 }));
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -796,16 +797,14 @@ function AdminPage() {
               <div>
                 <p className="font-display text-lg">Views in the last 14 days</p>
                 <div className="mt-3 flex h-32 items-end gap-1.5">
-                  {dailyViews.map((views, index) => (
-                    <div key={index} className="flex flex-1 flex-col items-center gap-1">
+                  {dailyBars.map(({ date, views }) => (
+                    <div key={date.getTime()} className="flex flex-1 flex-col items-center gap-1">
                       <div
                         className="w-full rounded-t bg-primary/80"
                         style={{ height: `${Math.max(2, (views / maxDailyViews) * 100)}%` }}
-                        title={`${days[index].toLocaleDateString()}: ${views} views`}
+                        title={`${date.toLocaleDateString()}: ${views} views`}
                       />
-                      <span className="text-[10px] text-muted-foreground">
-                        {days[index].getDate()}
-                      </span>
+                      <span className="text-[10px] text-muted-foreground">{date.getDate()}</span>
                     </div>
                   ))}
                 </div>
