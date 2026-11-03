@@ -335,6 +335,34 @@ function AdminPage() {
   const allProfiles = profiles ?? [];
   const pending = allProfiles.filter((p) => p.host_status === "pending");
   const allEvents = events ?? [];
+  const allBusinesses = businesses ?? [];
+  const analyticsRows = engagementRows ?? [];
+  const kindCount = (kind: string) => analyticsRows.filter((row) => row.kind === kind).length;
+  const viewsByEvent = new Map<string, number>();
+  for (const row of analyticsRows) {
+    if (row.kind !== "view") continue;
+    viewsByEvent.set(row.event_id, (viewsByEvent.get(row.event_id) ?? 0) + 1);
+  }
+  const topEvents = [...viewsByEvent.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id, views]) => ({ event: allEvents.find((e) => e.id === id), views }))
+    .filter((entry): entry is { event: BukaEvent; views: number } => !!entry.event);
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (13 - i));
+    return day;
+  });
+  const dailyViews = days.map((day) => {
+    const next = new Date(day);
+    next.setDate(day.getDate() + 1);
+    return analyticsRows.filter(
+      (row) =>
+        row.kind === "view" && new Date(row.created_at) >= day && new Date(row.created_at) < next,
+    ).length;
+  });
+  const maxDailyViews = Math.max(1, ...dailyViews);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
