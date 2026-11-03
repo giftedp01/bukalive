@@ -12,8 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { countryName } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { BUSINESS_TYPES, type VerificationStatus } from "@/lib/destinations";
 import { categoryLabel, formatEventWhen, formatPrice, type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/admin")({
@@ -55,6 +57,24 @@ type ReportRow = {
   status: "open" | "reviewed" | "actioned" | "dismissed";
   created_at: string;
   reporter: { full_name: string | null; email: string | null } | null;
+};
+
+type BusinessRow = {
+  id: string;
+  slug: string;
+  name: string;
+  business_type: string;
+  country_id: string;
+  city: string;
+  destination_slug: string | null;
+  verification_status: VerificationStatus;
+  is_sample: boolean;
+};
+
+type AnalyticsRow = {
+  event_id: string;
+  kind: string;
+  created_at: string;
 };
 
 type LivestreamRequestRow = {
