@@ -153,6 +153,33 @@ function AdminPage() {
     },
   });
 
+  const { data: businesses, isLoading: businessesLoading } = useQuery({
+    queryKey: ["admin-businesses"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("businesses")
+        .select(
+          "id, slug, name, business_type, country_id, city, destination_slug, verification_status, is_sample",
+        )
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as BusinessRow[];
+    },
+  });
+
+  const { data: engagementRows, isLoading: analyticsLoading } = useQuery({
+    queryKey: ["admin-analytics"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("analytics_events")
+        .select("event_id, kind, created_at");
+      if (error) throw error;
+      return (data ?? []) as AnalyticsRow[];
+    },
+  });
+
   const decideHost = async (profile: ProfileRow, approve: boolean) => {
     const { error } = await supabase
       .from("profiles")
