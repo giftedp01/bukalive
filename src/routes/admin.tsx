@@ -710,6 +710,127 @@ function AdminPage() {
             ))
           )}
         </TabsContent>
+
+        <TabsContent value="businesses" className="mt-6 space-y-2">
+          {businessesLoading ? (
+            <Skeleton className="h-24 rounded-2xl" />
+          ) : allBusinesses.length === 0 ? (
+            <p className="rounded-2xl bg-muted px-6 py-10 text-center text-sm text-muted-foreground">
+              No tourism businesses yet.
+            </p>
+          ) : (
+            allBusinesses.map((business) => (
+              <div
+                key={business.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to="/businesses/$slug"
+                      params={{ slug: business.slug }}
+                      className="font-medium hover:underline"
+                    >
+                      {business.name}
+                    </Link>
+                    <Badge variant="secondary">
+                      {BUSINESS_TYPES[business.business_type] ?? business.business_type}
+                    </Badge>
+                    {business.is_sample && <Badge variant="outline">Sample</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {business.city}, {countryName(business.country_id)}
+                    {business.destination_slug ? ` · ${business.destination_slug}` : ""}
+                  </p>
+                </div>
+                <select
+                  aria-label={`Verification status for ${business.name}`}
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                  value={business.verification_status}
+                  onChange={(event) =>
+                    void setVerification(business, event.target.value as VerificationStatus)
+                  }
+                >
+                  {VERIFICATION_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6 space-y-6">
+          {analyticsLoading ? (
+            <Skeleton className="h-40 rounded-2xl" />
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                {[
+                  { label: "Total views", value: String(kindCount("view")) },
+                  { label: "Saves", value: String(kindCount("save")) },
+                  { label: "Shares", value: String(kindCount("share")) },
+                  { label: "Booking clicks", value: String(kindCount("booking_click")) },
+                  { label: "Go There clicks", value: String(kindCount("go_there")) },
+                ].map((stat) => (
+                  <Card key={stat.label}>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="font-display text-2xl">{stat.value}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div>
+                <p className="font-display text-lg">Views in the last 14 days</p>
+                <div className="mt-3 flex h-32 items-end gap-1.5">
+                  {dailyViews.map((views, index) => (
+                    <div key={index} className="flex flex-1 flex-col items-center gap-1">
+                      <div
+                        className="w-full rounded-t bg-primary/80"
+                        style={{ height: `${Math.max(2, (views / maxDailyViews) * 100)}%` }}
+                        title={`${days[index].toLocaleDateString()}: ${views} views`}
+                      />
+                      <span className="text-[10px] text-muted-foreground">
+                        {days[index].getDate()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="font-display text-lg">Most viewed experiences</p>
+                {topEvents.length === 0 ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    No views recorded yet.
+                  </p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {topEvents.map(({ event, views }) => (
+                      <li
+                        key={event.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-sm"
+                      >
+                        <Link
+                          to="/events/$eventId"
+                          params={{ eventId: event.id }}
+                          className="truncate hover:underline"
+                        >
+                          {event.title}
+                        </Link>
+                        <span className="shrink-0 text-muted-foreground">{views} views</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );
