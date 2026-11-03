@@ -19,8 +19,8 @@ export function useCoverUrl(path: string | null | undefined) {
     queryFn: async () => {
       if (!path) return null;
       if (path.startsWith("http")) return path;
-      const { data } = await getCoverUrl({ data: { path } });
-      return data?.url ?? null;
+      const res = await getCoverUrl({ data: { path } });
+      return res?.url ?? null;
     },
   });
 }
