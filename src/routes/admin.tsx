@@ -12,8 +12,10 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { countryName } from "@/data/countries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { BUSINESS_TYPES, type VerificationStatus } from "@/lib/destinations";
 import { categoryLabel, formatEventWhen, formatPrice, type BukaEvent } from "@/lib/buka";
 
 export const Route = createFileRoute("/admin")({
@@ -57,6 +59,24 @@ type ReportRow = {
   reporter: { full_name: string | null; email: string | null } | null;
 };
 
+type BusinessRow = {
+  id: string;
+  slug: string;
+  name: string;
+  business_type: string;
+  country_id: string;
+  city: string;
+  destination_slug: string | null;
+  verification_status: VerificationStatus;
+  is_sample: boolean;
+};
+
+type AnalyticsRow = {
+  event_id: string;
+  kind: string;
+  created_at: string;
+};
+
 type LivestreamRequestRow = {
   id: string;
   requester_id: string;
@@ -72,6 +92,15 @@ type LivestreamRequestRow = {
   created_at: string;
   requester: { full_name: string | null; email: string | null } | null;
 };
+
+const VERIFICATION_OPTIONS: { value: VerificationStatus; label: string }[] = [
+  { value: "none", label: "Not verified" },
+  { value: "pending", label: "Pending review" },
+  { value: "verified_business", label: "Verified tourism business" },
+  { value: "verified_guide", label: "Verified guide / operator" },
+  { value: "verified_attraction", label: "Verified attraction" },
+  { value: "tourism_organisation", label: "Tourism organisation" },
+];
 
 function AdminPage() {
   const { isAdmin, loading, user } = useAuth();
@@ -133,6 +162,33 @@ function AdminPage() {
     },
   });
 
+  const { data: businesses, isLoading: businessesLoading } = useQuery({
+    queryKey: ["admin-businesses"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("businesses")
+        .select(
+          "id, slug, name, business_type, country_id, city, destination_slug, verification_status, is_sample",
+        )
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as BusinessRow[];
+    },
+  });
+
+  const { data: engagementRows, isLoading: analyticsLoading } = useQuery({
+    queryKey: ["admin-analytics"],
+    enabled: isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("analytics_events")
+        .select("event_id, kind, created_at");
+      if (error) throw error;
+      return (data ?? []) as AnalyticsRow[];
+    },
+  });
+
   const decideHost = async (profile: ProfileRow, approve: boolean) => {
     const { error } = await supabase
       .from("profiles")
@@ -147,6 +203,20 @@ function AdminPage() {
     }
     toast.success(approve ? "Host approved" : "Application rejected");
     queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+  };
+
+  const setVerification = async (business: BusinessRow, status: VerificationStatus) => {
+    const { error } = await supabase
+      .from("businesses")
+      .update({ verification_status: status })
+      .eq("id", business.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(`${business.name} verification updated`);
+    queryClient.invalidateQueries({ queryKey: ["admin-businesses"] });
+    queryClient.invalidateQueries({ queryKey: ["business", business.slug] });
   };
 
   const toggleFlag = async (event: BukaEvent) => {
@@ -274,6 +344,35 @@ function AdminPage() {
   const allProfiles = profiles ?? [];
   const pending = allProfiles.filter((p) => p.host_status === "pending");
   const allEvents = events ?? [];
+  const allBusinesses = businesses ?? [];
+  const analyticsRows = engagementRows ?? [];
+  const kindCount = (kind: string) => analyticsRows.filter((row) => row.kind === kind).length;
+  const viewsByEvent = new Map<string, number>();
+  for (const row of analyticsRows) {
+    if (row.kind !== "view") continue;
+    viewsByEvent.set(row.event_id, (viewsByEvent.get(row.event_id) ?? 0) + 1);
+  }
+  const topEvents = [...viewsByEvent.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id, views]) => ({ event: allEvents.find((e) => e.id === id), views }))
+    .filter((entry): entry is { event: BukaEvent; views: number } => !!entry.event);
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (13 - i));
+    return day;
+  });
+  const dailyViews = days.map((day) => {
+    const next = new Date(day);
+    next.setDate(day.getDate() + 1);
+    return analyticsRows.filter(
+      (row) =>
+        row.kind === "view" && new Date(row.created_at) >= day && new Date(row.created_at) < next,
+    ).length;
+  });
+  const maxDailyViews = Math.max(1, ...dailyViews);
+  const dailyBars = days.map((day, index) => ({ date: day, views: dailyViews[index] ?? 0 }));
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -304,8 +403,10 @@ function AdminPage() {
           <TabsTrigger value="hosts">Host applications</TabsTrigger>
           <TabsTrigger value="people">People</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="businesses">Businesses</TabsTrigger>
           <TabsTrigger value="livestream-requests">Livestream requests</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="analytics">Platform analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hosts" className="mt-6 space-y-3">
@@ -617,6 +718,125 @@ function AdminPage() {
                 )}
               </div>
             ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="businesses" className="mt-6 space-y-2">
+          {businessesLoading ? (
+            <Skeleton className="h-24 rounded-2xl" />
+          ) : allBusinesses.length === 0 ? (
+            <p className="rounded-2xl bg-muted px-6 py-10 text-center text-sm text-muted-foreground">
+              No tourism businesses yet.
+            </p>
+          ) : (
+            allBusinesses.map((business) => (
+              <div
+                key={business.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      to="/businesses/$slug"
+                      params={{ slug: business.slug }}
+                      className="font-medium hover:underline"
+                    >
+                      {business.name}
+                    </Link>
+                    <Badge variant="secondary">
+                      {BUSINESS_TYPES[business.business_type] ?? business.business_type}
+                    </Badge>
+                    {business.is_sample && <Badge variant="outline">Sample</Badge>}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {business.city}, {countryName(business.country_id)}
+                    {business.destination_slug ? ` · ${business.destination_slug}` : ""}
+                  </p>
+                </div>
+                <select
+                  aria-label={`Verification status for ${business.name}`}
+                  className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                  value={business.verification_status}
+                  onChange={(event) =>
+                    void setVerification(business, event.target.value as VerificationStatus)
+                  }
+                >
+                  {VERIFICATION_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6 space-y-6">
+          {analyticsLoading ? (
+            <Skeleton className="h-40 rounded-2xl" />
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                {[
+                  { label: "Total views", value: String(kindCount("view")) },
+                  { label: "Saves", value: String(kindCount("save")) },
+                  { label: "Shares", value: String(kindCount("share")) },
+                  { label: "Booking clicks", value: String(kindCount("booking_click")) },
+                  { label: "Go There clicks", value: String(kindCount("go_there")) },
+                ].map((stat) => (
+                  <Card key={stat.label}>
+                    <CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="font-display text-2xl">{stat.value}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <div>
+                <p className="font-display text-lg">Views in the last 14 days</p>
+                <div className="mt-3 flex h-32 items-end gap-1.5">
+                  {dailyBars.map(({ date, views }) => (
+                    <div key={date.getTime()} className="flex flex-1 flex-col items-center gap-1">
+                      <div
+                        className="w-full rounded-t bg-primary/80"
+                        style={{ height: `${Math.max(2, (views / maxDailyViews) * 100)}%` }}
+                        title={`${date.toLocaleDateString()}: ${views} views`}
+                      />
+                      <span className="text-[10px] text-muted-foreground">{date.getDate()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="font-display text-lg">Most viewed experiences</p>
+                {topEvents.length === 0 ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    No views recorded yet.
+                  </p>
+                ) : (
+                  <ul className="mt-3 space-y-2">
+                    {topEvents.map(({ event, views }) => (
+                      <li
+                        key={event.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-sm"
+                      >
+                        <Link
+                          to="/events/$eventId"
+                          params={{ eventId: event.id }}
+                          className="truncate hover:underline"
+                        >
+                          {event.title}
+                        </Link>
+                        <span className="shrink-0 text-muted-foreground">{views} views</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
