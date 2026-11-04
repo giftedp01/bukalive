@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bot, Lightbulb, MapPin, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+
+import { askBuka, type BukaAiReply } from "@/lib/buka-ai.functions";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -205,10 +208,34 @@ function AiPage() {
   const initialPrompt = "I want a warm, social night with music and good food";
   const [prompt, setPrompt] = useState(initialPrompt);
   const [submittedPrompt, setSubmittedPrompt] = useState(initialPrompt);
+  const [aiReply, setAiReply] = useState<BukaAiReply | null>(null);
+  const [pending, setPending] = useState(false);
+  const askBukaFn = useServerFn(askBuka);
+
+  const runAsk = async (value: string) => {
+    setPrompt(value);
+    setSubmittedPrompt(value);
+    setAiReply(null);
+    setPending(true);
+    try {
+      const result = await askBukaFn({ data: { prompt: value } });
+      setAiReply(result);
+    } catch {
+      setAiReply({
+        available: false,
+        error: "AI_UNAVAILABLE",
+        intro: "",
+        eventIds: [],
+        tips: [],
+      });
+    } finally {
+      setPending(false);
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmittedPrompt(prompt.trim() || initialPrompt);
+    void runAsk(prompt.trim() || initialPrompt);
   };
 
   const {
@@ -244,10 +271,24 @@ function AiPage() {
     },
   });
 
-  const { intro, suggestions, tips, fallback } = useMemo(
+  const local = useMemo(
     () => buildReply(submittedPrompt || "live experiences", events),
     [events, submittedPrompt],
   );
+
+  const aiEvents = useMemo(() => {
+    if (!aiReply?.available || aiReply.eventIds.length === 0) return null;
+    const byId = new Map(events.map((event) => [event.id, event] as const));
+    return aiReply.eventIds
+      .map((id) => byId.get(id))
+      .filter((event): event is AiEvent => Boolean(event))
+      .slice(0, 6);
+  }, [aiReply, events]);
+
+  const suggestions = (aiEvents ?? local.suggestions.map(({ event }) => event)) as AiEvent[];
+  const intro = aiReply?.available && aiReply.intro ? aiReply.intro : local.intro;
+  const tips = aiReply?.available && aiReply.tips.length > 0 ? aiReply.tips : local.tips;
+  const aiOffline = Boolean(aiReply && !aiReply.available);
 
   const samplePrompts = [
     "I want a warm, social night with music and good food",
@@ -288,10 +329,7 @@ function AiPage() {
             <button
               key={sample}
               type="button"
-              onClick={() => {
-                setPrompt(sample);
-                setSubmittedPrompt(sample);
-              }}
+              onClick={() => void runAsk(sample)}
               className="rounded-full border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
             >
               {sample}
@@ -323,9 +361,11 @@ function AiPage() {
             </Card>
           ) : (
             <>
-              {fallback && (
+              {(aiOffline || local.fallback) && (
                 <p className="mb-3 text-sm text-muted-foreground">
-                  No exact matches, here are the closest experiences.
+                  {aiOffline
+                    ? "Buka AI is offline right now — here are the closest experiences."
+                    : "No exact matches, here are the closest experiences."}
                 </p>
               )}
               {suggestions.length === 0 ? (
@@ -337,7 +377,7 @@ function AiPage() {
                   </CardContent>
                 </Card>
               ) : (
-                suggestions.map(({ event }) => (
+                suggestions.map((event) => (
                   <Card key={event.id} className="mb-3 overflow-hidden">
                     <CardContent className="p-0">
                       <div className="flex flex-col gap-4 p-4 sm:flex-row">
@@ -393,14 +433,16 @@ function AiPage() {
             Buka AI summary
           </div>
           <h2 className="mt-3 font-display text-2xl text-primary">
-            {isLoading
-              ? "Finding experiences…"
-              : isError
-                ? "Couldn’t load experiences. Please try again."
-                : intro}
+            {pending
+              ? "Buka is thinking…"
+              : isLoading
+                ? "Finding experiences…"
+                : isError
+                  ? "Couldn’t load experiences. Please try again."
+                  : intro}
           </h2>
           <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-            {!isLoading && !isError && tips.map((tip) => <li key={tip}>• {tip}</li>)}
+            {!pending && !isLoading && !isError && tips.map((tip) => <li key={tip}>• {tip}</li>)}
           </ul>
         </aside>
       </div>
