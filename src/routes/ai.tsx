@@ -1,4 +1,5 @@
-import { useQuery, useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bot, Lightbulb, MapPin, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -277,7 +278,7 @@ function AiPage() {
 
   const aiEvents = useMemo(() => {
     if (!aiReply?.available || aiReply.eventIds.length === 0) return null;
-    const byId = new Map(events.map((event) => [event.id, event]));
+    const byId = new Map(events.map((event) => [event.id, event] as const));
     return aiReply.eventIds
       .map((id) => byId.get(id))
       .filter((event): event is AiEvent => Boolean(event))
