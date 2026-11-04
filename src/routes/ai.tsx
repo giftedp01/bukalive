@@ -270,10 +270,24 @@ function AiPage() {
     },
   });
 
-  const { intro, suggestions, tips, fallback } = useMemo(
+  const local = useMemo(
     () => buildReply(submittedPrompt || "live experiences", events),
     [events, submittedPrompt],
   );
+
+  const aiEvents = useMemo(() => {
+    if (!aiReply?.available || aiReply.eventIds.length === 0) return null;
+    const byId = new Map(events.map((event) => [event.id, event]));
+    return aiReply.eventIds
+      .map((id) => byId.get(id))
+      .filter((event): event is AiEvent => Boolean(event))
+      .slice(0, 6);
+  }, [aiReply, events]);
+
+  const suggestions = (aiEvents ?? local.suggestions.map(({ event }) => event)) as AiEvent[];
+  const intro = aiReply?.available && aiReply.intro ? aiReply.intro : local.intro;
+  const tips = aiReply?.available && aiReply.tips.length > 0 ? aiReply.tips : local.tips;
+  const aiOffline = Boolean(aiReply && !aiReply.available);
 
   const samplePrompts = [
     "I want a warm, social night with music and good food",
@@ -314,10 +328,7 @@ function AiPage() {
             <button
               key={sample}
               type="button"
-              onClick={() => {
-                setPrompt(sample);
-                setSubmittedPrompt(sample);
-              }}
+              onClick={() => void runAsk(sample)}
               className="rounded-full border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-foreground"
             >
               {sample}
