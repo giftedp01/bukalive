@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bot, Lightbulb, MapPin, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+
+import { askBuka, type BukaAiReply } from "@/lib/buka-ai.functions";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -205,10 +207,34 @@ function AiPage() {
   const initialPrompt = "I want a warm, social night with music and good food";
   const [prompt, setPrompt] = useState(initialPrompt);
   const [submittedPrompt, setSubmittedPrompt] = useState(initialPrompt);
+  const [aiReply, setAiReply] = useState<BukaAiReply | null>(null);
+  const [pending, setPending] = useState(false);
+  const askBukaFn = useServerFn(askBuka);
+
+  const runAsk = async (value: string) => {
+    setPrompt(value);
+    setSubmittedPrompt(value);
+    setAiReply(null);
+    setPending(true);
+    try {
+      const result = await askBukaFn({ data: { prompt: value } });
+      setAiReply(result);
+    } catch {
+      setAiReply({
+        available: false,
+        error: "AI_UNAVAILABLE",
+        intro: "",
+        eventIds: [],
+        tips: [],
+      });
+    } finally {
+      setPending(false);
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmittedPrompt(prompt.trim() || initialPrompt);
+    void runAsk(prompt.trim() || initialPrompt);
   };
 
   const {
