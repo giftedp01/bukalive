@@ -360,9 +360,11 @@ function AiPage() {
             </Card>
           ) : (
             <>
-              {fallback && (
+              {(aiOffline || local.fallback) && (
                 <p className="mb-3 text-sm text-muted-foreground">
-                  No exact matches, here are the closest experiences.
+                  {aiOffline
+                    ? "Buka AI is offline right now — here are the closest experiences."
+                    : "No exact matches, here are the closest experiences."}
                 </p>
               )}
               {suggestions.length === 0 ? (
@@ -374,7 +376,7 @@ function AiPage() {
                   </CardContent>
                 </Card>
               ) : (
-                suggestions.map(({ event }) => (
+                suggestions.map((event) => (
                   <Card key={event.id} className="mb-3 overflow-hidden">
                     <CardContent className="p-0">
                       <div className="flex flex-col gap-4 p-4 sm:flex-row">
@@ -430,14 +432,16 @@ function AiPage() {
             Buka AI summary
           </div>
           <h2 className="mt-3 font-display text-2xl text-primary">
-            {isLoading
-              ? "Finding experiences…"
-              : isError
-                ? "Couldn’t load experiences. Please try again."
-                : intro}
+            {pending
+              ? "Buka is thinking…"
+              : isLoading
+                ? "Finding experiences…"
+                : isError
+                  ? "Couldn’t load experiences. Please try again."
+                  : intro}
           </h2>
           <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-            {!isLoading && !isError && tips.map((tip) => <li key={tip}>• {tip}</li>)}
+            {!pending && !isLoading && !isError && tips.map((tip) => <li key={tip}>• {tip}</li>)}
           </ul>
         </aside>
       </div>
