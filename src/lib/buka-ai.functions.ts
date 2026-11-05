@@ -161,7 +161,7 @@ export const askBuka = createServerFn({ method: "POST" })
       const response = await generateResponse({
         model: "openai/gpt-6-astra",
         instructions: INSTRUCTIONS,
-        input: `Today is ${now.toISOString()}. The traveller asks: ${data.prompt}\n\nCatalogue of BukaLive experiences:\n${catalogue}`,
+        input: `Today is ${now.toISOString()}. The traveller asks: ${data.prompt}\n\nReply with JSON only.\n\nCatalogue of BukaLive experiences:\n${catalogue}`,
         max_output_tokens: 900,
         text: { format: { type: "json_object" } },
       });
