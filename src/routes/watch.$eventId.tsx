@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { AdSlot } from "@/components/AdSlot";
+import { TranslatedDescription } from "@/components/TranslatedDescription";
 import { Countdown } from "@/components/Countdown";
 import { EventVideo } from "@/components/EventVideo";
 import { Badge } from "@/components/ui/badge";
@@ -478,7 +479,12 @@ function WatchPage() {
             </ClientOnly>
           )}
 
-          <p className="whitespace-pre-line text-sm text-muted-foreground">{event.description}</p>
+          <TranslatedDescription
+            className="text-sm"
+            eventId={event.id}
+            title={event.title}
+            description={event.description}
+          />
           <AdSlot placement="watch-sidebar" />
         </div>
 

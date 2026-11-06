@@ -6,5 +6,7 @@
 - [ ] Phase 2: Live World Map (Google Maps — needs connection), My BukaLive, replay pages, recommendations
 - [x] Phase 3: host dashboard analytics (views/unique viewers/saves/shares/booking clicks/Go There/conversion), admin businesses verification console, admin platform analytics, admin role granted to owner account
 - [x] Phase 3 leftover: Ask Buka real AI (server-side AI concierge with keyword fallback, verified in app 2026-11-04)
-- [ ] Phase 4: captions/translation slots, booking provider architecture
+- [x] Phase 4: experience description translation (10 languages, cached)
+- [ ] Phase 4: live audio captions (needs stream transcription)
+- [ ] Phase 4:, booking provider architecture
 - [ ] Rotate LiveKit secret (user)

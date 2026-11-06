@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { AccessibilityPanel } from "@/components/AccessibilityPanel";
 import { AdSlot } from "@/components/AdSlot";
+import { TranslatedDescription } from "@/components/TranslatedDescription";
 import { BlockButton } from "@/components/BlockButton";
 import { ReportButton } from "@/components/ReportButton";
 import { SaveButton } from "@/components/SaveButton";
@@ -299,9 +300,13 @@ function EventDetail() {
         <div className="space-y-6">
           <section>
             <h2 className="font-display text-xl">About this broadcast</h2>
-            <p className="mt-2 whitespace-pre-line text-muted-foreground">
-              {event.description || "The host hasn't added a description yet."}
-            </p>
+            <TranslatedDescription
+              className="mt-2"
+              eventId={event.id}
+              title={event.title}
+              description={event.description}
+              showTitle
+            />
           </section>
 
           <AccessibilityPanel

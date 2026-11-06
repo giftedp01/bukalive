@@ -34,8 +34,8 @@ export function AccessibilityPanel({
   const isNature = natureKeywords.some((keyword) => normalized.includes(keyword));
 
   const features = [
-    "English captions",
-    "live translation ready",
+    "Live captions coming soon",
+    "Description translation into 10 languages",
     "host audio support",
     ...(isCulture ? ["local-language context cues"] : []),
     ...(isNature ? ["trail and route notes"] : []),
