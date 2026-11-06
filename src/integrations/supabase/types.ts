@@ -234,6 +234,44 @@ export type Database = {
         }
         Relationships: []
       }
+      event_translations: {
+        Row: {
+          created_at: string
+          description: string
+          event_id: string
+          id: string
+          language: string
+          source_updated_at: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_id: string
+          id?: string
+          language: string
+          source_updated_at: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_id?: string
+          id?: string
+          language?: string
+          source_updated_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_translations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           book_url: string | null
